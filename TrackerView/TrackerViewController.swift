@@ -77,7 +77,8 @@ final class TrackerViewController: UIViewController {
     var categories: [TrackerCategory] = [
         TrackerCategory(title: "Группа 1", trackers: [
             Tracker(id: UUID(), title: "Трекер 1", color: "#FF6347", emoji: "🔥", schedule: ["Monday"]),
-            Tracker(id: UUID(), title: "Трекер 2", color: "#4682B4", emoji: "🌊", schedule: ["Tuesday"])
+            Tracker(id: UUID(), title: "Трекер 2", color: "#4682B4", emoji: "🌊", schedule: ["Tuesday"]),
+            
         ]),
         TrackerCategory(title: "Группа 2", trackers: [
             Tracker(id: UUID(), title: "Трекер 3", color: "#32CD32", emoji: "🌳", schedule: ["Wednesday"])
@@ -232,12 +233,27 @@ extension TrackerViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegateFlowLayout
 extension TrackerViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        // Устанавливаем размер ячейки
-        let width = (collectionView.bounds.width - 32) / 2
-        return CGSize(width: width, height: 120)
+        let padding: CGFloat = 16 + 9 // Отступы между ячейками и краями экрана
+        let availableWidth = collectionView.bounds.width - padding
+        let cellWidth = availableWidth / 2 - 8 // 8 пикселей для отступа между ячейками
+        
+        return CGSize(width: cellWidth, height: 120)
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 40) // Высота заголовка секции
     }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16) // Отступы от краев экрана
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 12 // Расстояние между строками ячеек
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return 9 // Расстояние между ячейками в строке
+    }
 }
+

@@ -73,10 +73,22 @@ final class TrackerCreateViewController: UIViewController {
     }
     
     @objc func didHabitButtonTap() {
-        // Действие при нажатии на кнопку "Привычка"
+        let trackerCreateVC = TrackerHabbitViewController()
+        if let navigationController = self.navigationController {
+            navigationController.pushViewController(trackerCreateVC, animated: true)
+        } else {
+            trackerCreateVC.modalPresentationStyle = .pageSheet
+            present(trackerCreateVC, animated: true, completion: nil)
+        }
     }
     
     @objc func didIrregEventButtonTap() {
-        // Действие при нажатии на кнопку "Нерегулярное событие"
+        let trackerCreateVC = TrackerIrregularEventViewController()
+        if let navigationController = self.navigationController {
+            navigationController.pushViewController(trackerCreateVC, animated: true)
+        } else {
+            trackerCreateVC.modalPresentationStyle = .pageSheet
+            present(trackerCreateVC, animated: true, completion: nil)
+        }
     }
 }
