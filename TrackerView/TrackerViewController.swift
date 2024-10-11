@@ -76,12 +76,12 @@ final class TrackerViewController: UIViewController {
     
     var categories: [TrackerCategory] = [
         TrackerCategory(title: "Группа 1", trackers: [
-            Tracker(id: UUID(), title: "Трекер 1", color: "#FF6347", emoji: "🔥", schedule: ["Monday"]),
-            Tracker(id: UUID(), title: "Трекер 2", color: "#4682B4", emoji: "🌊", schedule: ["Tuesday"]),
+            Tracker(id: UUID(), title: "Трекер 1", color: .red, emoji: "🔥", schedule: ["Monday"]),
+            Tracker(id: UUID(), title: "Трекер 2", color: .green, emoji: "🌊", schedule: ["Tuesday"]),
             
         ]),
         TrackerCategory(title: "Группа 2", trackers: [
-            Tracker(id: UUID(), title: "Трекер 3", color: "#32CD32", emoji: "🌳", schedule: ["Wednesday"])
+            Tracker(id: UUID(), title: "Трекер 3", color: .blue, emoji: "🌳", schedule: ["Wednesday"])
         ])
     ]
     

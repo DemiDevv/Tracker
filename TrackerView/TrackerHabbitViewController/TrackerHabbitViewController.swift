@@ -4,7 +4,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     // MARK: - UI Elements
     
-    // Текстовое поле для ввода названия привычки
     private let titleTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
@@ -13,14 +12,14 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return textField
     }()
     
-    // Таблица для выбора категории и расписания
     private let optionsTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
+        tableView.isScrollEnabled = false // Отключаем скроллинг
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.backgroundColor = .clear // Убираем фоновый цвет таблицы
         return tableView
     }()
     
-    // Коллекция для выбора эмодзи
     private let emojiCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 40, height: 40)
@@ -31,7 +30,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return collectionView
     }()
     
-    // Коллекция для выбора цвета
     private let colorCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 40, height: 40)
@@ -42,7 +40,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return collectionView
     }()
     
-    // Кнопка "Создать"
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Создать", for: .normal)
@@ -53,7 +50,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return button
     }()
     
-    // Кнопка "Отменить"
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Отменить", for: .normal)
@@ -62,28 +58,25 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return button
     }()
     
-    // Данные для эмодзи и цветов
     private let emojis = ["😀", "😺", "🌸", "🐶", "❤️", "😱", "😇", "😡", "🤔", "🥇", "🎸", "🍔"]
     private let colors: [UIColor] = [
         .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemBlue, .systemPurple,
         .systemPink, .systemTeal, .systemIndigo, .systemGray, .brown, .magenta
     ]
     
-    // Выбранные эмодзи и цвет
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     
     // MARK: - View Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         
-        // Настраиваем TableView
         optionsTableView.dataSource = self
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         
-        // Настраиваем CollectionView
         emojiCollectionView.dataSource = self
         emojiCollectionView.delegate = self
         emojiCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "emojiCell")
@@ -92,36 +85,53 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         colorCollectionView.delegate = self
         colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "colorCell")
         
-        // Добавляем элементы на экран
-        setupViews()
+        setupViewsWithoutStackView()
     }
     
-    // MARK: - Setup Views
-    private func setupViews() {
-        // Создаем stackView для удобного расположения
-        let stackView = UIStackView(arrangedSubviews: [
-            titleTextField,
-            optionsTableView,
-            emojiCollectionView,
-            colorCollectionView,
-            createButton,
-            cancelButton
-        ])
+    // MARK: - Setup Views Without StackView
+    private func setupViewsWithoutStackView() {
+        // Добавляем элементы на view
+        view.addSubview(titleTextField)
+        view.addSubview(optionsTableView)
+        view.addSubview(emojiCollectionView)
+        view.addSubview(colorCollectionView)
+        view.addSubview(createButton)
+        view.addSubview(cancelButton)
         
-        stackView.axis = .vertical
-        stackView.spacing = 16
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(stackView)
-        
-        // Настройка констрейнтов
+        // Устанавливаем констрейнты для каждого элемента
         NSLayoutConstraint.activate([
-            stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            // Констрейнты для titleTextField
+            titleTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            optionsTableView.heightAnchor.constraint(equalToConstant: 120),
+            // Констрейнты для optionsTableView
+            optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 0),
+            optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            optionsTableView.heightAnchor.constraint(equalToConstant: 150),
+            
+            // Констрейнты для emojiCollectionView
+            emojiCollectionView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 16),
+            emojiCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            emojiCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             emojiCollectionView.heightAnchor.constraint(equalToConstant: 100),
-            colorCollectionView.heightAnchor.constraint(equalToConstant: 100)
+            
+            // Констрейнты для colorCollectionView
+            colorCollectionView.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
+            colorCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            colorCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            colorCollectionView.heightAnchor.constraint(equalToConstant: 100),
+            
+            // Констрейнты для createButton
+            createButton.topAnchor.constraint(equalTo: colorCollectionView.bottomAnchor, constant: 16),
+            createButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            createButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            // Констрейнты для cancelButton
+            cancelButton.topAnchor.constraint(equalTo: createButton.bottomAnchor, constant: 8),
+            cancelButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
     
@@ -129,6 +139,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 2 // Категория и Расписание
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 75 // Устанавливаем высоту ячейки
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -141,6 +155,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         }
         
         cell.accessoryType = .disclosureIndicator
+        cell.backgroundColor = .clear // Убираем фоновый цвет ячеек
         return cell
     }
     
@@ -148,11 +163,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        if indexPath.row == 0 {
-            // Переход к выбору категории
-        } else if indexPath.row == 1 {
-            // Переход к выбору расписания
-        }
     }
     
     // MARK: - UICollectionViewDataSource

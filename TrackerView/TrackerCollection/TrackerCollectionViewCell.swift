@@ -106,7 +106,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     func configure(with tracker: Tracker) {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
-        colorView.backgroundColor = .blue
+        colorView.backgroundColor = tracker.color
         // Предположим, что tracker содержит информацию о днях
         daysLabel.text = "5 дней"
     }
