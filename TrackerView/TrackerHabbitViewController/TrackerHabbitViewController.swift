@@ -1,6 +1,6 @@
 import UIKit
 
-class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate,  UICollectionViewDelegateFlowLayout {
     
     // MARK: - UI Elements
     
@@ -40,6 +40,13 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return collectionView
     }()
     
+    private let buttonContainerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    // Кнопка "Создать"
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Создать", for: .normal)
@@ -49,11 +56,15 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
+
+    // Кнопка "Отменить"
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Отменить", for: .normal)
         button.setTitleColor(.systemRed, for: .normal)
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.systemRed.cgColor
+        button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -85,6 +96,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         colorCollectionView.delegate = self
         colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "colorCell")
         
+        // Регистрация заголовков
+        emojiCollectionView.register(TrackerHabbitHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TrackerHabbitHeaderView.identifier)
+        colorCollectionView.register(TrackerHabbitHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TrackerHabbitHeaderView.identifier)
+        
         setupViewsWithoutStackView()
     }
     
@@ -95,8 +110,9 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         view.addSubview(optionsTableView)
         view.addSubview(emojiCollectionView)
         view.addSubview(colorCollectionView)
-        view.addSubview(createButton)
-        view.addSubview(cancelButton)
+        view.addSubview(buttonContainerView)
+        buttonContainerView.addSubview(cancelButton)
+        buttonContainerView.addSubview(createButton)
         
         // Устанавливаем констрейнты для каждого элемента
         NSLayoutConstraint.activate([
@@ -113,6 +129,8 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             
             // Констрейнты для emojiCollectionView
             emojiCollectionView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 16),
+            emojiCollectionView.widthAnchor.constraint(equalToConstant: 374),
+            emojiCollectionView.heightAnchor.constraint(equalToConstant: 204),
             emojiCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             emojiCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             emojiCollectionView.heightAnchor.constraint(equalToConstant: 100),
@@ -123,15 +141,22 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             colorCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             colorCollectionView.heightAnchor.constraint(equalToConstant: 100),
             
-            // Констрейнты для createButton
-            createButton.topAnchor.constraint(equalTo: colorCollectionView.bottomAnchor, constant: 16),
-            createButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            createButton.heightAnchor.constraint(equalToConstant: 50),
+            buttonContainerView.topAnchor.constraint(equalTo: colorCollectionView.bottomAnchor, constant: 20),
+            buttonContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            buttonContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            buttonContainerView.heightAnchor.constraint(equalToConstant: 50),
             
-            // Констрейнты для cancelButton
-            cancelButton.topAnchor.constraint(equalTo: createButton.bottomAnchor, constant: 8),
-            cancelButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            // Настройки кнопки "Отменить"
+            cancelButton.leadingAnchor.constraint(equalTo: buttonContainerView.leadingAnchor),
+            cancelButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor),
+            cancelButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor),
+            cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -16),
+            cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor), // Делаем кнопки одинаковой ширины
+            
+            // Настройки кнопки "Создать"
+            createButton.trailingAnchor.constraint(equalTo: buttonContainerView.trailingAnchor),
+            createButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor),
+            createButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor)
         ])
     }
     
@@ -201,4 +226,27 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             selectedColor = colors[indexPath.item]
         }
     }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionHeader else {
+            return UICollectionReusableView()
+        }
+        
+        let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TrackerHabbitHeaderView.identifier, for: indexPath) as! TrackerHabbitHeaderView
+        
+        if collectionView == emojiCollectionView {
+            headerView.configure(with: "Emoji")
+        } else if collectionView == colorCollectionView {
+            headerView.configure(with: "Цвет")
+        }
+        
+        return headerView
+    }
+
+    
+    // Метод для задания высоты заголовков
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        return CGSize(width: collectionView.frame.width, height: 40) // Высота заголовка
+    }
+
 }
