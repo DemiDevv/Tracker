@@ -7,17 +7,45 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     private let titleTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Введите название трекера"
-        textField.borderStyle = .roundedRect
+        textField.borderStyle = .none
+        textField.backgroundColor = .backgroundDayYp
+
+        textField.layer.cornerRadius = 16
+        textField.layer.masksToBounds = true
+
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: textField.frame.height))
+        textField.leftView = paddingView
+        textField.leftViewMode = .always
+
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
+
     
     private let optionsTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .insetGrouped)
-        tableView.isScrollEnabled = false // Отключаем скроллинг
+        tableView.isScrollEnabled = false
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = .clear // Убираем фоновый цвет таблицы
+        tableView.backgroundColor = .clear
         return tableView
+    }()
+    
+    private let emojiLabel: UILabel = {
+        let emojiLabel = UILabel()
+        emojiLabel.text = "Emoji"
+        emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        return emojiLabel
+        
+    }()
+    
+    private let colorLabel: UILabel = {
+        let emojiLabel = UILabel()
+        emojiLabel.text = "Цвет"
+        emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        return emojiLabel
+        
     }()
     
     private let emojiCollectionView: UICollectionView = {
@@ -96,10 +124,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         colorCollectionView.delegate = self
         colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "colorCell")
         
-        // Регистрация заголовков
-        emojiCollectionView.register(TrackerHabbitHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TrackerHabbitHeaderView.identifier)
-        colorCollectionView.register(TrackerHabbitHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TrackerHabbitHeaderView.identifier)
-        
         setupViewsWithoutStackView()
     }
     
@@ -111,6 +135,8 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         view.addSubview(emojiCollectionView)
         view.addSubview(colorCollectionView)
         view.addSubview(buttonContainerView)
+        view.addSubview(emojiLabel)
+        view.addSubview(colorLabel)
         buttonContainerView.addSubview(cancelButton)
         buttonContainerView.addSubview(createButton)
         
@@ -120,23 +146,30 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             titleTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            titleTextField.heightAnchor.constraint(equalToConstant: 75),
             
             // Констрейнты для optionsTableView
-            optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 0),
+            optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24),
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             optionsTableView.heightAnchor.constraint(equalToConstant: 150),
             
+            emojiLabel.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
+            emojiLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 28),
+            
             // Констрейнты для emojiCollectionView
-            emojiCollectionView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 16),
+            emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 0),
             emojiCollectionView.widthAnchor.constraint(equalToConstant: 374),
             emojiCollectionView.heightAnchor.constraint(equalToConstant: 204),
             emojiCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             emojiCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             emojiCollectionView.heightAnchor.constraint(equalToConstant: 100),
             
+            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
+            colorLabel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 28),
+            
             // Констрейнты для colorCollectionView
-            colorCollectionView.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
+            colorCollectionView.topAnchor.constraint(equalTo: colorLabel.bottomAnchor, constant: 0),
             colorCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             colorCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             colorCollectionView.heightAnchor.constraint(equalToConstant: 100),
@@ -180,7 +213,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         }
         
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = .clear // Убираем фоновый цвет ячеек
+        cell.backgroundColor = .backgroundDayYp
         return cell
     }
     
@@ -226,23 +259,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             selectedColor = colors[indexPath.item]
         }
     }
-    
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard kind == UICollectionView.elementKindSectionHeader else {
-            return UICollectionReusableView()
-        }
-        
-        let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TrackerHabbitHeaderView.identifier, for: indexPath) as! TrackerHabbitHeaderView
-        
-        if collectionView == emojiCollectionView {
-            headerView.configure(with: "Emoji")
-        } else if collectionView == colorCollectionView {
-            headerView.configure(with: "Цвет")
-        }
-        
-        return headerView
-    }
-
     
     // Метод для задания высоты заголовков
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {

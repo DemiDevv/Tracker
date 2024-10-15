@@ -20,7 +20,6 @@
 		30F88C1E2CA6BF0C00A84469 /* TrackerCategoryHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F88C1D2CA6BF0C00A84469 /* TrackerCategoryHeaderView.swift */; };
 		30F88C212CB5603600A84469 /* TrackerIrregularEventViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F88C202CB5603600A84469 /* TrackerIrregularEventViewController.swift */; };
 		30F88C242CB6F07600A84469 /* TrackerHabbitViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F88C232CB6F07600A84469 /* TrackerHabbitViewController.swift */; };
-		30F88C262CB9322F00A84469 /* TrackerHabbtiHeadersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30F88C252CB9322F00A84469 /* TrackerHabbtiHeadersView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,7 +38,6 @@
 		30F88C1D2CA6BF0C00A84469 /* TrackerCategoryHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryHeaderView.swift; sourceTree = "<group>"; };
 		30F88C202CB5603600A84469 /* TrackerIrregularEventViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerIrregularEventViewController.swift; sourceTree = "<group>"; };
 		30F88C232CB6F07600A84469 /* TrackerHabbitViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerHabbitViewController.swift; sourceTree = "<group>"; };
-		30F88C252CB9322F00A84469 /* TrackerHabbtiHeadersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerHabbtiHeadersView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				30F88C232CB6F07600A84469 /* TrackerHabbitViewController.swift */,
-				30F88C252CB9322F00A84469 /* TrackerHabbtiHeadersView.swift */,
 			);
 			path = TrackerHabbitViewController;
 			sourceTree = "<group>";
@@ -227,7 +224,6 @@
 				30F88C1E2CA6BF0C00A84469 /* TrackerCategoryHeaderView.swift in Sources */,
 				304E7A372C875A0E00F55F68 /* StatViewController.swift in Sources */,
 				30F88C242CB6F07600A84469 /* TrackerHabbitViewController.swift in Sources */,
-				30F88C262CB9322F00A84469 /* TrackerHabbtiHeadersView.swift in Sources */,
 				304E7A1E2C8621B000F55F68 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
