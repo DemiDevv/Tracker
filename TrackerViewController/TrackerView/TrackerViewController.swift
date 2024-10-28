@@ -94,10 +94,50 @@ final class TrackerViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         
+        NotificationCenter.default.addObserver(self, selector: #selector(didReceiveNewTrackerNotification(_:)), name: .didCreateNewTracker, object: nil)
+        
         setupTrackerView()
         updateUI()
         setupCollectionView()
     }
+    
+    @objc private func didReceiveNewTrackerNotification(_ notification: Notification) {
+        guard let newTracker = notification.object as? Tracker else { return }
+        
+        // Создаем новый массив категорий
+        var updatedCategories: [TrackerCategory] = []
+        
+        var trackerAdded = false
+        
+        // Проходим по всем существующим категориям
+        for category in categories {
+            if category.title == "Нужная категория" { // Здесь может быть условие выбора нужной категории
+                // Добавляем трекер в копию текущей категории
+                var updatedTrackers = category.trackers
+                updatedTrackers.append(newTracker)
+                
+                // Создаем новую категорию с обновленным списком трекеров
+                let updatedCategory = TrackerCategory(title: category.title, trackers: updatedTrackers)
+                updatedCategories.append(updatedCategory)
+                trackerAdded = true
+            } else {
+                // Добавляем существующую категорию без изменений
+                updatedCategories.append(category)
+            }
+        }
+        
+        // Если подходящей категории не было найдено, создаем новую
+        if !trackerAdded {
+            let newCategory = TrackerCategory(title: "Новая категория", trackers: [newTracker])
+            updatedCategories.append(newCategory)
+        }
+        
+        // Обновляем categories новым массивом категорий
+        categories = updatedCategories
+        updateUI()
+    }
+
+
     
     // MARK: - Setup UI
     private func setupTrackerView() {
@@ -256,4 +296,9 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
         return 9 // Расстояние между ячейками в строке
     }
 }
+
+extension Notification.Name {
+    static let didCreateNewTracker = Notification.Name("didCreateNewTracker")
+}
+
 

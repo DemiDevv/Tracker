@@ -107,6 +107,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
         colorView.backgroundColor = tracker.color
+        addButton.tintColor = tracker.color
         // Предположим, что tracker содержит информацию о днях
         daysLabel.text = "5 дней"
     }

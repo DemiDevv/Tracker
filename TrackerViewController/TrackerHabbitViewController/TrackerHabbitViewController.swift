@@ -85,6 +85,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         return button
     }()
     
@@ -123,12 +124,14 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         optionsTableView.tableFooterView = UIView()
         
         setupViewsWithoutStackView()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+        
+        emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+        colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+
+        // Обновляем высоты коллекций
         updateCollectionViewHeights()
     }
+
     
     @objc private func textFieldDidChange() {
         if let text = titleTextField.text, !text.isEmpty {
@@ -138,6 +141,24 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             createButton.isEnabled = false
             createButton.backgroundColor = .systemGray // Делаем кнопку серой и неактивной
         }
+    }
+    
+    @objc private func didTapCreateButton() {
+        guard let title = titleTextField.text, !title.isEmpty
+//              let color = selectedColor,
+//              let emoji = selectedEmoji 
+        else {
+            return
+        }
+
+        // Создаем объект Tracker
+        let newTracker = Tracker(id: UUID(), title: title, color: .blue, emoji: "😀", schedule: [])
+
+        // Передаем данные обратно через NotificationCenter или Delegate
+        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
+        
+        // Закрываем оба контроллера
+        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
     func updateCollectionViewHeights() {

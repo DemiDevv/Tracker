@@ -99,13 +99,11 @@
 		304E7A322C8759CD00F55F68 /* TrackerViewController */ = {
 			isa = PBXGroup;
 			children = (
+				30D8F3332CCFE69200B2986D /* TrackerView */,
 				30D8F32D2CC9567C00B2986D /* ScheduleViewController */,
 				30F88C222CB6F04700A84469 /* TrackerHabbitViewController */,
 				30F88C1F2CB55FB100A84469 /* TrackerIrregularEventViewController */,
-				30F88C1A2CA6BAEB00A84469 /* TrackerCollection */,
 				30B13E702CA5514A00386389 /* TrackerCreateView */,
-				304E7A332C8759E200F55F68 /* TrackerViewController.swift */,
-				3035EF882C96F80400897ADE /* TrackerBody.swift */,
 			);
 			path = TrackerViewController;
 			sourceTree = "<group>";
@@ -133,6 +131,16 @@
 				30D8F3302CC956AD00B2986D /* SwitchTableViewCell.swift */,
 			);
 			path = ScheduleViewController;
+			sourceTree = "<group>";
+		};
+		30D8F3332CCFE69200B2986D /* TrackerView */ = {
+			isa = PBXGroup;
+			children = (
+				3035EF882C96F80400897ADE /* TrackerBody.swift */,
+				304E7A332C8759E200F55F68 /* TrackerViewController.swift */,
+				30F88C1A2CA6BAEB00A84469 /* TrackerCollection */,
+			);
+			path = TrackerView;
 			sourceTree = "<group>";
 		};
 		30F88C1A2CA6BAEB00A84469 /* TrackerCollection */ = {
