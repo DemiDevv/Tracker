@@ -91,14 +91,14 @@ class TrackerCollectionViewCell: UICollectionViewCell {
             titleLabel.trailingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: -10),
             
             // Количество дней
-            daysLabel.topAnchor.constraint(equalTo: colorView.bottomAnchor, constant: 8),
-            daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            daysLabel.topAnchor.constraint(equalTo: colorView.bottomAnchor, constant: 16),
+            daysLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
             
             // Кнопка с плюсом
             addButton.centerYAnchor.constraint(equalTo: daysLabel.centerYAnchor),
-            addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            addButton.widthAnchor.constraint(equalToConstant: 24),
-            addButton.heightAnchor.constraint(equalToConstant: 24)
+            addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            addButton.widthAnchor.constraint(equalToConstant: 80),
+            addButton.heightAnchor.constraint(equalToConstant: 80)
         ])
     }
     

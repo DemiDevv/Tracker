@@ -1,6 +1,6 @@
 import UIKit
 
-class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate,  UICollectionViewDelegateFlowLayout {
+class TrackerIrregularEventViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: - UI Elements
     
@@ -9,18 +9,18 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         textField.placeholder = "Введите название трекера"
         textField.borderStyle = .none
         textField.backgroundColor = .backgroundDayYp
-
+        
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
-
+        
         let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: textField.frame.height))
         textField.leftView = paddingView
         textField.leftViewMode = .always
-
+        
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField
     }()
-
+    
     
     private let optionsTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -33,8 +33,8 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         tableView.separatorColor = .lightGray  // Цвет разделителей
         return tableView
     }()
-
-
+    
+    
     
     private let emojiLabel: UILabel = {
         let emojiLabel = UILabel()
@@ -56,30 +56,29 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     private let emojiCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 40, height: 40)
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 10
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.isScrollEnabled = false
         return collectionView
     }()
     
     private let colorCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 40, height: 40)
-        layout.minimumInteritemSpacing = 10
-        layout.minimumLineSpacing = 10
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.isScrollEnabled = false
         return collectionView
     }()
+    
     
     private let buttonContainerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
+    
     // Кнопка "Создать"
     private let createButton: UIButton = {
         let button = UIButton(type: .system)
@@ -90,7 +89,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-
+    
     // Кнопка "Отменить"
     private let cancelButton: UIButton = {
         let button = UIButton(type: .system)
@@ -122,15 +121,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
-
-        
-        emojiCollectionView.dataSource = self
-        emojiCollectionView.delegate = self
-        emojiCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "emojiCell")
-        
-        colorCollectionView.dataSource = self
-        colorCollectionView.delegate = self
-        colorCollectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "colorCell")
         
         setupViewsWithoutStackView()
     }
@@ -139,15 +129,16 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         super.viewDidAppear(animated)
         updateCollectionViewHeights()
     }
-    
-    // MARK: - Setup Views Without StackView
-    func updateCollectionViewHeights() {
-        let emojiContentHeight = emojiCollectionView.collectionViewLayout.collectionViewContentSize.height
-        let colorContentHeight = colorCollectionView.collectionViewLayout.collectionViewContentSize.height
 
-        emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiContentHeight).isActive = true
-        colorCollectionView.heightAnchor.constraint(equalToConstant: colorContentHeight).isActive = true
+    func updateCollectionViewHeights() {
+        let itemHeight: CGFloat = 52 // Высота одной ячейки
+        let numberOfRows: CGFloat = 3 // Количество строк
+        let totalHeight = itemHeight * numberOfRows + 24 * 2 // 24 отступ сверху и снизу
+        
+        emojiCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
+        colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
     }
+
     
     private func setupViewsWithoutStackView() {
         // Добавляем элементы на view
@@ -163,8 +154,6 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         
         // Устанавливаем констрейнты для каждого элемента
         NSLayoutConstraint.activate([
-            
-            
             // Констрейнты для titleTextField
             titleTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
@@ -175,7 +164,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24),
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            optionsTableView.heightAnchor.constraint(equalToConstant: 150),
+            optionsTableView.heightAnchor.constraint(equalToConstant: 75),
             
             // Расстояние 32 между optionsTableView и emojiLabel
             emojiLabel.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
@@ -215,7 +204,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             createButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor),
             createButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor)
         ])
-
+        emojiCollectionView.dataSource = self
+        emojiCollectionView.delegate = self
+        colorCollectionView.dataSource = self
+        colorCollectionView.delegate = self
     }
     
     // MARK: - UITableViewDataSource
@@ -223,7 +215,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2 // Категория и Расписание
+        return 1 // Категория и Расписание
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -232,13 +224,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "optionCell", for: indexPath)
-        
-        if indexPath.row == 0 {
-            cell.textLabel?.text = "Категория"
-        } else {
-            cell.textLabel?.text = "Расписание"
-        }
-        
+        cell.textLabel?.text = "Категория"
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
         return cell
@@ -253,97 +239,111 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
     }
-
-
+    
+    
     
     // MARK: - UITableViewDelegate
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        if indexPath.row == 1 {
+            let scheduleVC = ScheduleViewController()
+            scheduleVC.modalPresentationStyle = .pageSheet
+            present(scheduleVC, animated: true, completion: nil)
+
+        }
     }
     
     // Убираем отступы между секциями и ячейками
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 0 // Убираем отступы перед секцией
     }
-
+    
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 0 // Убираем отступы после секции
     }
-
+    
     // Убираем отступы между ячейками
     func tableView(_ tableView: UITableView, layoutMarginsForItemAt indexPath: IndexPath) -> UIEdgeInsets {
         return UIEdgeInsets.zero // Минимизируем отступы между ячейками
     }
+    
+}
 
-    
-    // MARK: - UICollectionViewDataSource
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+
+extension TrackerIrregularEventViewController: UICollectionViewDataSource {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        numberOfItemsInSection section: Int
+    ) -> Int {
         if collectionView == emojiCollectionView {
             return emojis.count
-        } else {
+        } else if collectionView == colorCollectionView {
             return colors.count
         }
+        return 0
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
         if collectionView == emojiCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "emojiCell", for: indexPath)
-            let emojiLabel = UILabel(frame: cell.contentView.bounds)
-            emojiLabel.text = emojis[indexPath.item]
-            emojiLabel.textAlignment = .center
-            emojiLabel.font = .systemFont(ofSize: 32)
-            cell.contentView.addSubview(emojiLabel)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as! TrackerHabbitViewCell
+            cell.titleLabel.text = emojis[indexPath.row]
+            cell.colorView.isHidden = true // Скрываем colorView для Emoji ячейки
             return cell
-        } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "colorCell", for: indexPath)
-            
-            cell.contentView.subviews.forEach { $0.removeFromSuperview() }
-            
-            let colorView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
-            colorView.backgroundColor = colors[indexPath.item]
-            colorView.layer.cornerRadius = 8
-            colorView.layer.masksToBounds = true
-            
-            cell.contentView.addSubview(colorView)
-            
-            return cell
-        }
-    }
-    
-    // MARK: - UICollectionViewDelegate
-    
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if collectionView == emojiCollectionView {
-            selectedEmoji = emojis[indexPath.item]
         } else if collectionView == colorCollectionView {
-            selectedColor = colors[indexPath.item]
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! TrackerHabbitViewCell
+            cell.colorView.backgroundColor = colors[indexPath.row]
+            cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
+            cell.colorView.isHidden = false
+            return cell
         }
+        return UICollectionViewCell()
     }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let totalPadding: CGFloat = 16 + 16 + (5 * 5) // Отступы по краям и между ячейками
-        let availableWidth = collectionView.frame.width - totalPadding
-        let itemWidth = availableWidth / 6 // 6 ячеек в строку
-        return CGSize(width: itemWidth, height: 52)
-    }
-
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 2.5
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 2.5
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        if collectionView == emojiCollectionView {
-            return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 19)
-        } else {
-            return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 19)
-        }
-    }
-
 }
+
+extension TrackerIrregularEventViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    }
+}
+
+
+extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
+        return CGSize(width: 52, height: 52) // Устанавливаем размер ячейки 52x52
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumInteritemSpacingForSectionAt section: Int
+    ) -> CGFloat {
+        return 5 // Отступ между столбцами
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        minimumLineSpacingForSectionAt section: Int
+    ) -> CGFloat {
+        return 0 // Отступ между строками
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        insetForSectionAt section: Int
+    ) -> UIEdgeInsets {
+        // Устанавливаем отступы сверху, снизу, слева и справа
+        return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 18)
+    }
+}
+
+
