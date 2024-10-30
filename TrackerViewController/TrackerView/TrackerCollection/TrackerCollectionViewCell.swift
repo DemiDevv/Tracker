@@ -42,12 +42,16 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     
     // Кнопка с плюсом
     let addButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setImage(UIImage(systemName: "plus.circle.fill"), for: .normal)
-        button.tintColor = .systemOrange
+        let button = UIButton.systemButton(
+            with: UIImage(named: "plus_button") ?? UIImage(),
+            target: nil,
+            action: nil
+        )
+        button.tintColor = .blue // Цвет значка
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+
     
     static let identifier = "TrackerCell"
     
@@ -97,8 +101,9 @@ class TrackerCollectionViewCell: UICollectionViewCell {
             // Кнопка с плюсом
             addButton.centerYAnchor.constraint(equalTo: daysLabel.centerYAnchor),
             addButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-            addButton.widthAnchor.constraint(equalToConstant: 80),
-            addButton.heightAnchor.constraint(equalToConstant: 80)
+            addButton.widthAnchor.constraint(equalToConstant: 34), // Устанавливаем ширину 34
+            addButton.heightAnchor.constraint(equalToConstant: 34) // Устанавливаем высоту 34
+
         ])
     }
     
