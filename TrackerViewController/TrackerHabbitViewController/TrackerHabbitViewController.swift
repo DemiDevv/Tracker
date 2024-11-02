@@ -98,13 +98,13 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         button.layer.borderColor = UIColor.systemRed.cgColor
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
         return button
     }()
     
     private let emojis = ["😀", "😺", "🌸", "🐶", "❤️", "😱", "😇", "😡", "🤔", "🥇", "🎸", "🍔", "😺", "🌸", "🐶", "❤️", "😱", "😇"]
     private let colors: [UIColor] = [
-        .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemBlue, .systemPurple,
-        .systemPink, .systemTeal, .systemIndigo, .systemGray, .brown, .magenta, .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemBlue, .systemPurple
+        .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
     
     private var selectedEmoji: String?
@@ -141,6 +141,9 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             createButton.isEnabled = false
             createButton.backgroundColor = .systemGray // Делаем кнопку серой и неактивной
         }
+    }
+    @objc private func didTapCancelButton() {
+        presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     @objc private func didTapCreateButton() {

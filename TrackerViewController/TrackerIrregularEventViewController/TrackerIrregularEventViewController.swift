@@ -87,6 +87,7 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(didTapCreateButton), for: .touchUpInside)
         return button
     }()
     
@@ -99,6 +100,7 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         button.layer.borderColor = UIColor.systemRed.cgColor
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
         return button
     }()
     
@@ -137,6 +139,28 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         
         emojiCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
         colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
+    }
+    
+    @objc private func didTapCancelButton() {
+        presentingViewController?.dismiss(animated: true, completion: nil)
+    }
+    
+    @objc private func didTapCreateButton() {
+        guard let title = titleTextField.text, !title.isEmpty
+//              let color = selectedColor,
+//              let emoji = selectedEmoji
+        else {
+            return
+        }
+
+        // Создаем объект Tracker
+        let newTracker = Tracker(id: UUID(), title: title, color: .blue, emoji: "😀", schedule: [])
+
+        // Передаем данные обратно через NotificationCenter или Delegate
+        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
+        
+        // Закрываем оба контроллера
+        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
     

@@ -6,18 +6,21 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     // Эмодзи трекера
     let emojiLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 32)
+        label.font = .systemFont(ofSize: 16)
+        label.backgroundColor = UIColor.white.withAlphaComponent(0.5)
+        label.layer.cornerRadius = 12
+        label.clipsToBounds = true
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+
     
     // Название трекера
     let titleLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .bold)
+        label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .white
-        label.textAlignment = .center
         label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -42,15 +45,22 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     
     // Кнопка с плюсом
     let addButton: UIButton = {
-        let button = UIButton.systemButton(
-            with: UIImage(named: "plus_button") ?? UIImage(),
-            target: nil,
-            action: nil
-        )
-        button.tintColor = .blue // Цвет значка
+        let button = UIButton()
+        button.setImage(UIImage(named: "plus_button"), for: .normal)
+        button.tintColor = .red
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         return button
     }()
+
+    var trackerID: UUID? // Идентификатор трекера
+    var isCompleted: Bool = false {
+        didSet {
+            // Изменяем изображение кнопки при изменении состояния
+            let imageName = isCompleted ? "completed_button" : "plus_button"
+            addButton.setImage(UIImage(named: imageName), for: .normal)
+        }
+    }
 
     
     static let identifier = "TrackerCell"
@@ -66,7 +76,6 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(daysLabel)
         contentView.addSubview(addButton)
         
-        // Настраиваем констрейнты
         setupConstraints()
     }
     
@@ -86,13 +95,14 @@ class TrackerCollectionViewCell: UICollectionViewCell {
             // Эмодзи трекера
             emojiLabel.topAnchor.constraint(equalTo: colorView.topAnchor, constant: 10),
             emojiLabel.leadingAnchor.constraint(equalTo: colorView.leadingAnchor, constant: 10),
-            emojiLabel.widthAnchor.constraint(equalToConstant: 40),
-            emojiLabel.heightAnchor.constraint(equalToConstant: 40),
+            emojiLabel.widthAnchor.constraint(equalToConstant: 24),
+            emojiLabel.heightAnchor.constraint(equalToConstant: 24),
             
             // Название трекера
-            titleLabel.centerYAnchor.constraint(equalTo: emojiLabel.centerYAnchor),
-            titleLabel.leadingAnchor.constraint(equalTo: emojiLabel.trailingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: -10),
+            titleLabel.centerXAnchor.constraint(equalTo: colorView.centerXAnchor),
+            titleLabel.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
+            titleLabel.leadingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: 12),
+            titleLabel.trailingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: -12),
             
             // Количество дней
             daysLabel.topAnchor.constraint(equalTo: colorView.bottomAnchor, constant: 16),
@@ -108,12 +118,25 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     }
     
     // MARK: - Configuration
-    func configure(with tracker: Tracker) {
+    @objc private func addButtonTapped() {
+        guard let trackerID = trackerID else { return }
+        // Отправляем уведомление для изменения статуса выполнения трекера
+        NotificationCenter.default.post(name: .didToggleTrackerCompletion, object: trackerID)
+    }
+    
+    func configure(with tracker: Tracker, isCompleted: Bool, daysCompleted: Int) {
+        print("Color for button:", tracker.color)  // Проверка цвета
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
         colorView.backgroundColor = tracker.color
         addButton.tintColor = tracker.color
-        // Предположим, что tracker содержит информацию о днях
-        daysLabel.text = "5 дней"
+        daysLabel.text = "\(daysCompleted) дней"
+        self.trackerID = tracker.id
+        self.isCompleted = isCompleted
     }
+
+}
+
+extension Notification.Name {
+    static let didToggleTrackerCompletion = Notification.Name("didToggleTrackerCompletion")
 }

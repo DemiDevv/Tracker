@@ -76,18 +76,20 @@ final class TrackerViewController: UIViewController {
     
     var categories: [TrackerCategory] = [
         TrackerCategory(title: "Группа 1", trackers: [
-            Tracker(id: UUID(), title: "Трекер 1", color: .red, emoji: "🔥", schedule: ["Monday"]),
-            Tracker(id: UUID(), title: "Трекер 2", color: .green, emoji: "🌊", schedule: ["Tuesday"]),
+            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🌸", schedule: ["Monday"]),
+            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection3, emoji: "❤️", schedule: ["Tuesday"]),
             
         ]),
         TrackerCategory(title: "Группа 2", trackers: [
-            Tracker(id: UUID(), title: "Трекер 3", color: .blue, emoji: "🌳", schedule: ["Wednesday"])
+            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection8, emoji: "🐶", schedule: ["Wednesday"])
         ])
     ]
     
     // MARK: - Data
     
-    var completedTrackers: [TrackerRecord] = []
+    var trackerRecords: [TrackerRecord] = []
+    var completedTrackers: Set<UUID> = []
+    var currentDate: Date = Date()
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -95,49 +97,12 @@ final class TrackerViewController: UIViewController {
         view.backgroundColor = .white
         
         NotificationCenter.default.addObserver(self, selector: #selector(didReceiveNewTrackerNotification(_:)), name: .didCreateNewTracker, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(toggleTrackerCompletion(_:)), name: .didToggleTrackerCompletion, object: nil)
         
         setupTrackerView()
         updateUI()
         setupCollectionView()
     }
-    
-    @objc private func didReceiveNewTrackerNotification(_ notification: Notification) {
-        guard let newTracker = notification.object as? Tracker else { return }
-        
-        // Создаем новый массив категорий
-        var updatedCategories: [TrackerCategory] = []
-        
-        var trackerAdded = false
-        
-        // Проходим по всем существующим категориям
-        for category in categories {
-            if category.title == "Нужная категория" { // Здесь может быть условие выбора нужной категории
-                // Добавляем трекер в копию текущей категории
-                var updatedTrackers = category.trackers
-                updatedTrackers.append(newTracker)
-                
-                // Создаем новую категорию с обновленным списком трекеров
-                let updatedCategory = TrackerCategory(title: category.title, trackers: updatedTrackers)
-                updatedCategories.append(updatedCategory)
-                trackerAdded = true
-            } else {
-                // Добавляем существующую категорию без изменений
-                updatedCategories.append(category)
-            }
-        }
-        
-        // Если подходящей категории не было найдено, создаем новую
-        if !trackerAdded {
-            let newCategory = TrackerCategory(title: "Новая категория", trackers: [newTracker])
-            updatedCategories.append(newCategory)
-        }
-        
-        // Обновляем categories новым массивом категорий
-        categories = updatedCategories
-        updateUI()
-    }
-
-
     
     // MARK: - Setup UI
     private func setupTrackerView() {
@@ -193,15 +158,15 @@ final class TrackerViewController: UIViewController {
             
             // Коллекция трекеров
             collectionView.topAnchor.constraint(equalTo: trackerSearchBar.bottomAnchor, constant: 20),
-            collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 0),
+            collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
     
     // MARK: - UI Update Logic
     private func updateUI() {
-        let hasTrackers = !categories.isEmpty // Используйте trackers вместо categories
+        let hasTrackers = !categories.isEmpty
         
         emptyPlaceholderImageView.isHidden = hasTrackers
         emptyPlaceholderLabel.isHidden = hasTrackers
@@ -213,14 +178,70 @@ final class TrackerViewController: UIViewController {
     }
     
     // MARK: - Actions
+    
+    @objc private func didReceiveNewTrackerNotification(_ notification: Notification) {
+        guard let newTracker = notification.object as? Tracker else { return }
+        
+        // Создаем новый массив категорий
+        var updatedCategories: [TrackerCategory] = []
+        
+        var trackerAdded = false
+        
+        // Проходим по всем существующим категориям
+        for category in categories {
+            if category.title == "Нужная категория" { // Здесь может быть условие выбора нужной категории
+                // Добавляем трекер в копию текущей категории
+                var updatedTrackers = category.trackers
+                updatedTrackers.append(newTracker)
+                
+                // Создаем новую категорию с обновленным списком трекеров
+                let updatedCategory = TrackerCategory(title: category.title, trackers: updatedTrackers)
+                updatedCategories.append(updatedCategory)
+                trackerAdded = true
+            } else {
+                // Добавляем существующую категорию без изменений
+                updatedCategories.append(category)
+            }
+        }
+        
+        // Если подходящей категории не было найдено, создаем новую
+        if !trackerAdded {
+            let newCategory = TrackerCategory(title: "Новая категория", trackers: [newTracker])
+            updatedCategories.append(newCategory)
+        }
+        
+        // Обновляем categories новым массивом категорий
+        categories = updatedCategories
+        updateUI()
+    }
+    
+    @objc private func toggleTrackerCompletion(_ notification: Notification) {
+        guard let trackerID = notification.object as? UUID else { return }
+        
+        // Проверяем, выполнен ли трекер
+        if completedTrackers.contains(trackerID) {
+            completedTrackers.remove(trackerID)
+            removeCompletionRecord(for: trackerID)
+        } else {
+            completedTrackers.insert(trackerID)
+            addCompletionRecord(for: trackerID)
+        }
+        
+        collectionView.reloadData()
+    }
+    
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         let selectedDate = sender.date
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd.MM.yyyy" // Формат даты
+        
+        // Устанавливаем точную локаль и формат
+        dateFormatter.locale = Locale(identifier: "ru_RU") // Локаль "ru_RU" для формата
+        dateFormatter.dateFormat = "dd.MM.yy" // Точный формат вывода с двумя цифрами года
+
         let formattedDate = dateFormatter.string(from: selectedDate)
         print("Выбранная дата: \(formattedDate)")
     }
-    
+
     @objc private func addTrackerButtonTapped() {
         let trackerCreateVC = TrackerCreateViewController()
         if let navigationController = self.navigationController {
@@ -238,6 +259,21 @@ final class TrackerViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
     }
+    
+    private func addCompletionRecord(for trackerID: UUID) {
+        let record = TrackerRecord(trackerID: trackerID, date: currentDate)
+        completedTrackers.insert(trackerID)
+        // Дополнительная логика для сохранения записи, если требуется
+    }
+    
+    private func removeCompletionRecord(for trackerID: UUID) {
+        completedTrackers.remove(trackerID)
+        // Дополнительная логика для удаления записи, если требуется
+    }
+    
+    func completedDaysCount(for trackerID: UUID) -> Int {
+        return trackerRecords.filter { $0.trackerID == trackerID }.count
+    }
 }
 
 // MARK: - UICollectionViewDataSource
@@ -254,10 +290,15 @@ extension TrackerViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCollectionViewCell.identifier, for: indexPath) as! TrackerCollectionViewCell
         
         let tracker = categories[indexPath.section].trackers[indexPath.row]
-        cell.configure(with: tracker) // Конфигурируем ячейку с данными
+        let isCompleted = completedTrackers.contains(tracker.id)
+        let daysCompleted = completedDaysCount(for: tracker.id) // Подсчитываем выполненные дни
+        
+        // Обновляем конфигурацию ячейки
+        cell.configure(with: tracker, isCompleted: isCompleted, daysCompleted: daysCompleted)
         
         return cell
     }
+
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {

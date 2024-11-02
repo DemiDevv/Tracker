@@ -27,7 +27,7 @@ final class ScheduleViewController: UIViewController {
     
     private let doneButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("Создать", for: .normal)
+        button.setTitle("Готово", for: .normal)
         button.backgroundColor = .blackDayYp
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
