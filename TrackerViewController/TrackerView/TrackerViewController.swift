@@ -237,18 +237,21 @@ final class TrackerViewController: UIViewController {
     
     @objc private func toggleTrackerCompletion(_ notification: Notification) {
         guard let trackerID = notification.object as? UUID else { return }
-        
-        // Проверяем, выполнен ли трекер
+
         if completedTrackers.contains(trackerID) {
+            // Убираем отметку, уменьшаем счетчик
             completedTrackers.remove(trackerID)
             removeCompletionRecord(for: trackerID)
         } else {
+            // Добавляем отметку, увеличиваем счетчик
             completedTrackers.insert(trackerID)
             addCompletionRecord(for: trackerID)
         }
         
+        // Обновляем CollectionView для отображения изменений
         collectionView.reloadData()
     }
+
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         let selectedDate = sender.date
@@ -272,6 +275,7 @@ final class TrackerViewController: UIViewController {
             present(trackerCreateVC, animated: true, completion: nil)
         }
     }
+    
     private func setupCollectionView() {
         // Регистрируем ячейку и заголовок секции
         collectionView.register(TrackerCollectionViewCell.self, forCellWithReuseIdentifier: TrackerCollectionViewCell.identifier)
@@ -283,15 +287,13 @@ final class TrackerViewController: UIViewController {
     
     private func addCompletionRecord(for trackerID: UUID) {
         let record = TrackerRecord(trackerID: trackerID, date: currentDate)
-        completedTrackers.insert(trackerID)
-        // Дополнительная логика для сохранения записи, если требуется
+        trackerRecords.append(record)  // Добавляем в историю
     }
-    
+
     private func removeCompletionRecord(for trackerID: UUID) {
-        completedTrackers.remove(trackerID)
-        // Дополнительная логика для удаления записи, если требуется
+        trackerRecords.removeAll { $0.trackerID == trackerID && $0.date == currentDate }
     }
-    
+
     func completedDaysCount(for trackerID: UUID) -> Int {
         return trackerRecords.filter { $0.trackerID == trackerID }.count
     }

@@ -132,12 +132,20 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     // MARK: - Configuration
     @objc private func addButtonTapped() {
         guard let trackerID = trackerID else { return }
-        // Отправляем уведомление для изменения статуса выполнения трекера
+        
+        // Проверка, что выбранная дата не является будущей
+        if Calendar.current.isDateInFuture(Date()) {
+            print("Выбранная дата в будущем. Нельзя отметить трекер.")
+            return
+        }
+        
+        // Отправляем уведомление о изменении статуса выполнения трекера
         NotificationCenter.default.post(name: .didToggleTrackerCompletion, object: trackerID)
         
-        // Изменяем состояние выполнения
-        isCompleted.toggle() // Переключаем состояние
+        // Переключаем состояние выполнения и обновляем внешний вид кнопки
+        isCompleted.toggle()
     }
+
     
     func configure(with tracker: Tracker, isCompleted: Bool, daysCompleted: Int) {
         print("Color for button:", tracker.color)  // Проверка цвета
@@ -154,4 +162,10 @@ class TrackerCollectionViewCell: UICollectionViewCell {
 
 extension Notification.Name {
     static let didToggleTrackerCompletion = Notification.Name("didToggleTrackerCompletion")
+}
+
+extension Calendar {
+    func isDateInFuture(_ date: Date) -> Bool {
+        return self.compare(date, to: Date(), toGranularity: .day) == .orderedDescending
+    }
 }
