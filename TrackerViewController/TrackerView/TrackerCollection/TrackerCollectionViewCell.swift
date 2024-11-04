@@ -7,7 +7,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     let emojiLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
-        label.backgroundColor = UIColor.white.withAlphaComponent(0.5)
+        label.backgroundColor = UIColor.white.withAlphaComponent(0.3)
         label.layer.cornerRadius = 12
         label.clipsToBounds = true
         label.textAlignment = .center
@@ -47,7 +47,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     let addButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "plus_button"), for: .normal)
-        button.tintColor = .red
+        button.tintColor = .white
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         return button

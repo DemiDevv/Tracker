@@ -76,17 +76,16 @@ final class TrackerViewController: UIViewController {
     
     var categories: [TrackerCategory] = [
         TrackerCategory(title: "Группа 1", trackers: [
-            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🌸", schedule: ["Monday"]),
-            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection3, emoji: "❤️", schedule: ["Tuesday"]),
-            
+            Tracker(id: UUID(), title: "Поесть курицу", color: .systemBlue, emoji: "🌸", schedule: ["Monday"]),
+            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .systemRed, emoji: "❤️", schedule: ["Tuesday"]),
         ]),
         TrackerCategory(title: "Группа 2", trackers: [
-            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection8, emoji: "🐶", schedule: ["Wednesday"])
+            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .systemGreen, emoji: "🐶", schedule: ["Wednesday"])
         ])
     ]
     
     // MARK: - Data
-    
+    private var filteredCategories: [TrackerCategory] = []
     var trackerRecords: [TrackerRecord] = []
     var completedTrackers: Set<UUID> = []
     var currentDate: Date = Date()
@@ -99,6 +98,7 @@ final class TrackerViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(didReceiveNewTrackerNotification(_:)), name: .didCreateNewTracker, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(toggleTrackerCompletion(_:)), name: .didToggleTrackerCompletion, object: nil)
         
+        filterTrackers(for: getWeekday(from: Date()))
         setupTrackerView()
         updateUI()
         setupCollectionView()
@@ -166,16 +166,36 @@ final class TrackerViewController: UIViewController {
     
     // MARK: - UI Update Logic
     private func updateUI() {
-        let hasTrackers = !categories.isEmpty
-        
-        emptyPlaceholderImageView.isHidden = hasTrackers
-        emptyPlaceholderLabel.isHidden = hasTrackers
+        let hasTrackers = !filteredCategories.isEmpty
         collectionView.isHidden = !hasTrackers
+        emptyPlaceholderLabel.isHidden = hasTrackers
+        emptyPlaceholderImageView.isHidden = hasTrackers
         
         if hasTrackers {
             collectionView.reloadData()
         }
     }
+    // MARK: - Filter Method
+    
+    private func filterTrackers(for weekday: String) {
+        filteredCategories = categories.map { category in
+            let filteredTrackers = category.trackers.filter { $0.schedule.contains(weekday) }
+            return TrackerCategory(title: category.title, trackers: filteredTrackers)
+        }.filter { !$0.trackers.isEmpty }
+        
+        print("Filtered trackers for \(weekday): \(filteredCategories)")
+        updateUI()
+    }
+
+    
+    // Получаем день недели в виде строки из переданной даты
+    private func getWeekday(from date: Date) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE"
+        dateFormatter.locale = Locale(identifier: "en_US")
+        return dateFormatter.string(from: date)
+    }
+
     
     // MARK: - Actions
     
@@ -233,7 +253,8 @@ final class TrackerViewController: UIViewController {
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         let selectedDate = sender.date
         let dateFormatter = DateFormatter()
-        
+        let selectedWeekday = getWeekday(from: selectedDate)
+            filterTrackers(for: selectedWeekday)
         // Устанавливаем точную локаль и формат
         dateFormatter.locale = Locale(identifier: "ru_RU") // Локаль "ru_RU" для формата
         dateFormatter.dateFormat = "dd.MM.yy" // Точный формат вывода с двумя цифрами года
@@ -279,26 +300,24 @@ final class TrackerViewController: UIViewController {
 // MARK: - UICollectionViewDataSource
 extension TrackerViewController: UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return categories.count // Количество категорий
+        return filteredCategories.count
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categories[section].trackers.count // Количество трекеров в секции
+        return filteredCategories[section].trackers.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCollectionViewCell.identifier, for: indexPath) as! TrackerCollectionViewCell
         
-        let tracker = categories[indexPath.section].trackers[indexPath.row]
+        let tracker = filteredCategories[indexPath.section].trackers[indexPath.row]
         let isCompleted = completedTrackers.contains(tracker.id)
-        let daysCompleted = completedDaysCount(for: tracker.id) // Подсчитываем выполненные дни
+        let daysCompleted = completedDaysCount(for: tracker.id)
         
-        // Обновляем конфигурацию ячейки
         cell.configure(with: tracker, isCompleted: isCompleted, daysCompleted: daysCompleted)
         
         return cell
     }
-
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
