@@ -46,19 +46,20 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     // Кнопка с плюсом
     let addButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(named: "plus_button"), for: .normal)
-        button.tintColor = .white
+        button.setImage(UIImage(systemName: "plus"), for: .normal) // Изначальное изображение
+        button.backgroundColor = .white // Устанавливаем начальный цвет кнопки
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.layer.cornerRadius = 17 // Устанавливаем радиус для круговой кнопки
+        button.layer.masksToBounds = true // Обрезка границ
+        button.tintColor = .white
         button.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         return button
     }()
-
+    
     var trackerID: UUID? // Идентификатор трекера
     var isCompleted: Bool = false {
         didSet {
-            // Изменяем изображение кнопки при изменении состояния
-            let imageName = isCompleted ? "completed_button" : "plus_button"
-            addButton.setImage(UIImage(named: imageName), for: .normal)
+            updateButtonAppearance()
         }
     }
 
@@ -117,11 +118,25 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         ])
     }
     
+    // MARK: - Update Button Appearance
+    private func updateButtonAppearance() {
+        if isCompleted {
+            addButton.setImage(UIImage(named: "completed_button"), for: .normal) // Устанавливаем изображение "галочка"
+            addButton.alpha = 0.3 // Устанавливаем прозрачность
+        } else {
+            addButton.setImage(UIImage(systemName: "plus"), for: .normal) // Устанавливаем изображение "плюс"
+            addButton.alpha = 1.0 // Полная непрозрачность
+        }
+    }
+    
     // MARK: - Configuration
     @objc private func addButtonTapped() {
         guard let trackerID = trackerID else { return }
         // Отправляем уведомление для изменения статуса выполнения трекера
         NotificationCenter.default.post(name: .didToggleTrackerCompletion, object: trackerID)
+        
+        // Изменяем состояние выполнения
+        isCompleted.toggle() // Переключаем состояние
     }
     
     func configure(with tracker: Tracker, isCompleted: Bool, daysCompleted: Int) {
@@ -129,12 +144,12 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
         colorView.backgroundColor = tracker.color
-        addButton.tintColor = tracker.color
+        addButton.backgroundColor = tracker.color
         daysLabel.text = "\(daysCompleted) дней"
         self.trackerID = tracker.id
         self.isCompleted = isCompleted
+        updateButtonAppearance() // Обновляем вид кнопки при конфигурации
     }
-
 }
 
 extension Notification.Name {
