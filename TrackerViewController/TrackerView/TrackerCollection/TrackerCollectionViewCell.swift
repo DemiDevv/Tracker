@@ -56,6 +56,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    var currentDate: Date?
     var trackerID: UUID? // Идентификатор трекера
     var isCompleted: Bool = false {
         didSet {
@@ -131,23 +132,28 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Configuration
     @objc private func addButtonTapped() {
-        guard let trackerID = trackerID else { return }
-        
+        guard let trackerID = trackerID, let date = currentDate else { return }
+
         // Проверка, что выбранная дата не является будущей
-        if Calendar.current.isDateInFuture(Date()) {
+        if Calendar.current.isDateInFuture(date) {
             print("Выбранная дата в будущем. Нельзя отметить трекер.")
             return
         }
-        
+
         // Отправляем уведомление о изменении статуса выполнения трекера
-        NotificationCenter.default.post(name: .didToggleTrackerCompletion, object: trackerID)
-        
+        NotificationCenter.default.post(
+            name: .didToggleTrackerCompletion,
+            object: trackerID,
+            userInfo: ["date": date] // Передаем текущую дату
+        )
+
         // Переключаем состояние выполнения и обновляем внешний вид кнопки
         isCompleted.toggle()
     }
 
+
     
-    func configure(with tracker: Tracker, isCompleted: Bool, daysCompleted: Int) {
+    func configure(with tracker: Tracker, isCompleted: Bool, daysCompleted: Int, for date: Date) {
         print("Color for button:", tracker.color)  // Проверка цвета
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
@@ -157,7 +163,11 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         self.trackerID = tracker.id
         self.isCompleted = isCompleted
         updateButtonAppearance() // Обновляем вид кнопки при конфигурации
+
+        // Сохраняем дату в свойство
+        self.currentDate = date
     }
+
 }
 
 extension Notification.Name {

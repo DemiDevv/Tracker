@@ -236,23 +236,20 @@ final class TrackerViewController: UIViewController {
     }
     
     @objc private func toggleTrackerCompletion(_ notification: Notification) {
-        guard let trackerID = notification.object as? UUID else { return }
+        guard
+            let trackerID = notification.object as? UUID,
+            let date = notification.userInfo?["date"] as? Date  // Получаем дату выполнения
+        else { return }
 
-        if completedTrackers.contains(trackerID) {
-            // Убираем отметку, уменьшаем счетчик
-            completedTrackers.remove(trackerID)
-            removeCompletionRecord(for: trackerID)
+        if isTrackerCompleted(trackerID, on: date) {
+            removeCompletionRecord(for: trackerID, on: date)
         } else {
-            // Добавляем отметку, увеличиваем счетчик
-            completedTrackers.insert(trackerID)
-            addCompletionRecord(for: trackerID)
+            addCompletionRecord(for: trackerID, on: date)
         }
-        
-        updateUI() // вызов перерисовки UI после изменения
+
+        updateUI()
     }
 
-
-    
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
         let selectedDate = sender.date
         let dateFormatter = DateFormatter()
@@ -263,6 +260,7 @@ final class TrackerViewController: UIViewController {
         dateFormatter.dateFormat = "dd.MM.yy" // Точный формат вывода с двумя цифрами года
 
         let formattedDate = dateFormatter.string(from: selectedDate)
+        updateUI()
         print("Выбранная дата: \(formattedDate)")
     }
 
@@ -285,15 +283,19 @@ final class TrackerViewController: UIViewController {
         collectionView.delegate = self
     }
     
-    private func addCompletionRecord(for trackerID: UUID) {
-        if !trackerRecords.contains(where: { $0.trackerID == trackerID && $0.date == currentDate }) {
-            let record = TrackerRecord(trackerID: trackerID, date: currentDate)
+    private func isTrackerCompleted(_ trackerID: UUID, on date: Date) -> Bool {
+        return trackerRecords.contains { $0.trackerID == trackerID && $0.date == date }
+    }
+    
+    private func addCompletionRecord(for trackerID: UUID, on date: Date) {
+        if !trackerRecords.contains(where: { $0.trackerID == trackerID && $0.date == date }) {
+            let record = TrackerRecord(trackerID: trackerID, date: date)
             trackerRecords.append(record)
         }
     }
 
-    private func removeCompletionRecord(for trackerID: UUID) {
-        trackerRecords.removeAll { $0.trackerID == trackerID && $0.date == currentDate }
+    private func removeCompletionRecord(for trackerID: UUID, on date: Date) {
+        trackerRecords.removeAll { $0.trackerID == trackerID && $0.date == date }
     }
 
     func completedDaysCount(for trackerID: UUID) -> Int {
@@ -313,13 +315,13 @@ extension TrackerViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCollectionViewCell.identifier, for: indexPath) as! TrackerCollectionViewCell
-        
+
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.row]
-        let isCompleted = completedTrackers.contains(tracker.id)
+        let isCompleted = isTrackerCompleted(tracker.id, on: currentDate)  // Проверяем выполнение на конкретную дату
         let daysCompleted = completedDaysCount(for: tracker.id)
-        
-        cell.configure(with: tracker, isCompleted: isCompleted, daysCompleted: daysCompleted)
-        
+
+        cell.configure(with: tracker, isCompleted: isCompleted, daysCompleted: daysCompleted, for: currentDate) // Передаем `currentDate` как аргумент
+
         return cell
     }
     
