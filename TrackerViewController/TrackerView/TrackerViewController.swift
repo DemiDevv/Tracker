@@ -248,9 +248,9 @@ final class TrackerViewController: UIViewController {
             addCompletionRecord(for: trackerID)
         }
         
-        // Обновляем CollectionView для отображения изменений
-        collectionView.reloadData()
+        updateUI() // вызов перерисовки UI после изменения
     }
+
 
     
     @objc private func datePickerValueChanged(_ sender: UIDatePicker) {
@@ -286,8 +286,10 @@ final class TrackerViewController: UIViewController {
     }
     
     private func addCompletionRecord(for trackerID: UUID) {
-        let record = TrackerRecord(trackerID: trackerID, date: currentDate)
-        trackerRecords.append(record)  // Добавляем в историю
+        if !trackerRecords.contains(where: { $0.trackerID == trackerID && $0.date == currentDate }) {
+            let record = TrackerRecord(trackerID: trackerID, date: currentDate)
+            trackerRecords.append(record)
+        }
     }
 
     private func removeCompletionRecord(for trackerID: UUID) {
