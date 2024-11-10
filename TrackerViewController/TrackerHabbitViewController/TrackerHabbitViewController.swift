@@ -155,7 +155,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         }
 
         // Создаем объект Tracker
-        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday])
 
         // Передаем данные обратно через NotificationCenter или Delegate
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)

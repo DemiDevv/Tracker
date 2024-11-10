@@ -1,5 +1,10 @@
 import UIKit
 
+protocol TrackerCellDelegate: AnyObject {
+    func completeTracker(id: UUID)
+    func uncompleteTracker(id: UUID)
+}
+
 class TrackerCollectionViewCell: UICollectionViewCell {
     // MARK: - UI Elements
 
@@ -45,19 +50,23 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     
     // Кнопка с плюсом
     let addButton: UIButton = {
+        let pointSize = UIImage.SymbolConfiguration(pointSize: 11)
+        let image = UIImage(systemName: "plus", withConfiguration: pointSize)
         let button = UIButton()
-        button.setImage(UIImage(systemName: "plus"), for: .normal) // Изначальное изображение
-        button.backgroundColor = .white // Устанавливаем начальный цвет кнопки
+        button.backgroundColor = .white
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.layer.cornerRadius = 17 // Устанавливаем радиус для круговой кнопки
-        button.layer.masksToBounds = true // Обрезка границ
+        button.layer.cornerRadius = 17
+        button.layer.masksToBounds = true
         button.tintColor = .white
         button.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         return button
     }()
     
+    weak var delegate: TrackerCellDelegate?
     var currentDate: Date?
-    var trackerID: UUID? // Идентификатор трекера
+    var trackerID: UUID?
+    private var isCompletedToday: Bool = false
+    
     var isCompleted: Bool = false {
         didSet {
             updateButtonAppearance()
@@ -119,7 +128,19 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    // MARK: - Update Button Appearance
+    private func pluralizeDays(_ count: Int) -> String {
+        let remainder10 = count % 10
+        let remainder100 = count % 100
+        
+        if remainder10 == 1 && remainder100 != 11 {
+            return "\(count) день"
+        } else if remainder10 >= 2 && remainder10 <= 4 && (remainder100 < 10) || remainder100 >= 20 {
+            return "\(count) дня"
+        } else {
+            return "\(count) дней"
+        }
+    }
+    
     private func updateButtonAppearance() {
         if isCompleted {
             addButton.setImage(UIImage(named: "completed_button"), for: .normal) // Устанавливаем изображение "галочка"
@@ -132,50 +153,33 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Configuration
     @objc private func addButtonTapped() {
-        guard let trackerID = trackerID, let date = currentDate else { return }
-
-        // Проверка, что выбранная дата не является будущей
-        if Calendar.current.isDateInFuture(date) {
-            print("Выбранная дата в будущем. Нельзя отметить трекер.")
+        guard let trackerID = trackerID else {
+            assertionFailure("no trackerID")
             return
         }
-
-        // Отправляем уведомление о изменении статуса выполнения трекера
-        NotificationCenter.default.post(
-            name: .didToggleTrackerCompletion,
-            object: trackerID,
-            userInfo: ["date": date] // Передаем текущую дату
-        )
-
-        // Переключаем состояние выполнения и обновляем внешний вид кнопки
-        isCompleted.toggle()
+        if isCompletedToday {
+            delegate?.uncompleteTracker(id: trackerID)
+        } else {
+            delegate?.completeTracker(id: trackerID)
+        }
     }
 
-
     
-    func configure(with tracker: Tracker, isCompleted: Bool, daysCompleted: Int, for date: Date) {
-        print("Color for button:", tracker.color)  // Проверка цвета
+    
+    func configure(with tracker: Tracker, isCompletedToday: Bool) {
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
         colorView.backgroundColor = tracker.color
         addButton.backgroundColor = tracker.color
-        daysLabel.text = "\(daysCompleted) дней"
+        
+        let wordDay = pluralizeDays(1)
+        daysLabel.text = "\(wordDay) дней"
         self.trackerID = tracker.id
-        self.isCompleted = isCompleted
-        updateButtonAppearance() // Обновляем вид кнопки при конфигурации
-
-        // Сохраняем дату в свойство
-        self.currentDate = date
+        self.isCompletedToday = isCompletedToday
     }
 
 }
 
 extension Notification.Name {
     static let didToggleTrackerCompletion = Notification.Name("didToggleTrackerCompletion")
-}
-
-extension Calendar {
-    func isDateInFuture(_ date: Date) -> Bool {
-        return self.compare(date, to: Date(), toGranularity: .day) == .orderedDescending
-    }
 }
