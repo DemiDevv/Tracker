@@ -271,9 +271,8 @@ final class TrackerViewController: UIViewController {
     
     private func isTrackerCompletedToday(id: UUID) -> Bool {
         completedTrackers.contains { trackerRecord in
-            trackerRecord.trackerID == id &&
-            trackerRecord.date == datePicker.date
-            
+            let isSameDay = Calendar.current.isDate(trackerRecord.date, inSameDayAs: datePicker.date)
+            return trackerRecord.trackerID == id && isSameDay
         }
     }
 }
@@ -308,7 +307,16 @@ extension TrackerViewController: UICollectionViewDataSource {
 
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.row]
         cell.delegate = self
-        cell.configure(with: tracker, isCompletedToday: false)
+        
+        let isCompletedToday = isTrackerCompletedToday(id: tracker.id)
+        let completedDays = completedTrackers.filter {
+            $0.trackerID == tracker.id
+        }.count
+        cell.configure(with: tracker,
+                       isCompletedToday: isCompletedToday,
+                       indexPath: indexPath,
+                       completedDays: completedDays
+        )
 
         return cell
     }
@@ -325,17 +333,20 @@ extension TrackerViewController: UICollectionViewDataSource {
 }
 
 extension TrackerViewController: TrackerCellDelegate {
-    func completeTracker(id: UUID) {
+    func completeTracker(id: UUID, at indexPath: IndexPath) {
         let trackerRecord = TrackerRecord(trackerID: id, date: datePicker.date)
         completedTrackers.append(trackerRecord)
+        
+        collectionView.reloadItems(at: [indexPath])
     }
     
-    func uncompleteTracker(id: UUID) {
+    func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
         completedTrackers.removeAll { trackerRecord in
-            trackerRecord.trackerID == id &&
-            trackerRecord.date == datePicker.date
-            
+            let isSameDay = Calendar.current.isDate(trackerRecord.date, inSameDayAs: datePicker.date)
+            return trackerRecord.trackerID == id && isSameDay
         }
+        
+        collectionView.reloadItems(at: [indexPath])
     }
 }
 

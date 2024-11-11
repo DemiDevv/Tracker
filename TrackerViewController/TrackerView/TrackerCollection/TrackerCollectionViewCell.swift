@@ -1,8 +1,8 @@
 import UIKit
 
 protocol TrackerCellDelegate: AnyObject {
-    func completeTracker(id: UUID)
-    func uncompleteTracker(id: UUID)
+    func completeTracker(id: UUID, at indexPath: IndexPath)
+    func uncompleteTracker(id: UUID, at indexPath: IndexPath)
 }
 
 class TrackerCollectionViewCell: UICollectionViewCell {
@@ -62,17 +62,18 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
-    weak var delegate: TrackerCellDelegate?
-    var currentDate: Date?
-    var trackerID: UUID?
-    private var isCompletedToday: Bool = false
+    private let plusImage: UIImage = {
+        let pointSize = UIImage.SymbolConfiguration(pointSize: 11)
+        let image = UIImage(systemName: "plus", withConfiguration: pointSize) ?? UIImage()
+        return image
+    }()
     
-    var isCompleted: Bool = false {
-        didSet {
-            updateButtonAppearance()
-        }
-    }
-
+    private let completedImage = UIImage(named: "completed_image")
+    
+    weak var delegate: TrackerCellDelegate?
+    var trackerID: UUID?
+    private var indexPath: IndexPath?
+    private var isCompletedToday: Bool = false
     
     static let identifier = "TrackerCell"
     
@@ -141,45 +142,47 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    private func updateButtonAppearance() {
-        if isCompleted {
-            addButton.setImage(UIImage(named: "completed_button"), for: .normal) // Устанавливаем изображение "галочка"
-            addButton.alpha = 0.3 // Устанавливаем прозрачность
-        } else {
-            addButton.setImage(UIImage(systemName: "plus"), for: .normal) // Устанавливаем изображение "плюс"
-            addButton.alpha = 1.0 // Полная непрозрачность
-        }
-    }
-    
     // MARK: - Configuration
     @objc private func addButtonTapped() {
-        guard let trackerID = trackerID else {
+        guard let trackerID = trackerID, let indexPath = indexPath else {
             assertionFailure("no trackerID")
             return
         }
         if isCompletedToday {
-            delegate?.uncompleteTracker(id: trackerID)
+            delegate?.uncompleteTracker(id: trackerID, at: indexPath)
         } else {
-            delegate?.completeTracker(id: trackerID)
+            delegate?.completeTracker(id: trackerID, at: indexPath)
         }
     }
 
     
     
-    func configure(with tracker: Tracker, isCompletedToday: Bool) {
+    func configure(
+        with tracker: Tracker,
+        isCompletedToday: Bool,
+        indexPath: IndexPath,
+        completedDays: Int
+    ) {
+        self.trackerID = tracker.id
+        self.isCompletedToday = isCompletedToday
+        self.indexPath = indexPath
+        
         emojiLabel.text = tracker.emoji
         titleLabel.text = tracker.title
         colorView.backgroundColor = tracker.color
         addButton.backgroundColor = tracker.color
         
-        let wordDay = pluralizeDays(1)
-        daysLabel.text = "\(wordDay) дней"
-        self.trackerID = tracker.id
-        self.isCompletedToday = isCompletedToday
+        // Обновление фона кнопки в зависимости от статуса выполнения
+        if isCompletedToday {
+            addButton.backgroundColor = tracker.color.withAlphaComponent(0.3)
+        } else {
+            addButton.backgroundColor = tracker.color
+        }
+        
+        let wordDay = pluralizeDays(completedDays)
+        daysLabel.text = "\(wordDay)"
+        
+        let image = isCompletedToday ? completedImage : plusImage
+        addButton.setImage(image, for: .normal)
     }
-
-}
-
-extension Notification.Name {
-    static let didToggleTrackerCompletion = Notification.Name("didToggleTrackerCompletion")
 }
