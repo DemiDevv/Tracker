@@ -18,6 +18,7 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         textField.leftViewMode = .always
         
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         return textField
     }()
     
@@ -141,27 +142,45 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
     }
     
+    @objc private func textFieldDidChange() {
+        if let text = titleTextField.text, !text.isEmpty {
+            createButton.isEnabled = true
+            createButton.backgroundColor = .blackDayYp
+        } else {
+            createButton.isEnabled = false
+            createButton.backgroundColor = .grayYp
+        }
+    }
+    
     @objc private func didTapCancelButton() {
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     @objc private func didTapCreateButton() {
         guard let title = titleTextField.text, !title.isEmpty
-//              let color = selectedColor,
-//              let emoji = selectedEmoji
+//              let selectedEmoji = selectedEmoji,
+//              let selectedColor = selectedColor 
         else {
             return
         }
 
-        // Создаем объект Tracker
-        let newTracker = Tracker(id: UUID(), title: title, color: .blue, emoji: "😀", schedule: [])
+        let currentDate = Date()
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: currentDate)
 
-        // Передаем данные обратно через NotificationCenter или Delegate
+        guard let selectedWeekday = Weekday(rawValue: weekday) else {
+            return
+        }
+        
+        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [selectedWeekday])
+
+        let newTrackerRecord = TrackerRecord(trackerID: newTracker.id, date: currentDate)
+
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
-        // Закрываем оба контроллера
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
+
 
     
     private func setupViewsWithoutStackView() {

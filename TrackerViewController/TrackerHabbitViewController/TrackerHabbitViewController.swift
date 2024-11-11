@@ -136,12 +136,13 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func textFieldDidChange() {
         if let text = titleTextField.text, !text.isEmpty {
             createButton.isEnabled = true
-            createButton.backgroundColor = .blackDayYp // Задаем активный цвет
+            createButton.backgroundColor = .blackDayYp
         } else {
             createButton.isEnabled = false
-            createButton.backgroundColor = .systemGray // Делаем кнопку серой и неактивной
+            createButton.backgroundColor = .grayYp
         }
     }
+    
     @objc private func didTapCancelButton() {
         presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -154,13 +155,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             return
         }
 
-        // Создаем объект Tracker
         let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday])
 
-        // Передаем данные обратно через NotificationCenter или Delegate
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
-        // Закрываем оба контроллера
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
