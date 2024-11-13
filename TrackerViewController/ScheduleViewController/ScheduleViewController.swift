@@ -1,5 +1,10 @@
 import UIKit
 
+protocol ScheduleViewControllerDelegate: AnyObject {
+    func didSelectSchedule(_ selectedDays: [Weekday])
+}
+
+
 final class ScheduleViewController: UIViewController {
     
     // Названия дней недели
@@ -32,9 +37,13 @@ final class ScheduleViewController: UIViewController {
         button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
         return button
     }()
-
+    
+    
+    weak var delegate: ScheduleViewControllerDelegate?
+    private var selectedDays = Set<Weekday>()
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -69,6 +78,12 @@ final class ScheduleViewController: UIViewController {
             doneButton.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
+    
+    @objc private func didTapDoneButton() {
+        delegate?.didSelectSchedule(Array(selectedDays))
+        dismiss(animated: true, completion: nil)
+    }
+
 }
 
 extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
@@ -81,16 +96,6 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         return daysOfWeek.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath) as! SwitchTableViewCell
-        
-        // Настройка ячейки
-        cell.textLabel?.text = daysOfWeek[indexPath.row]
-        cell.switchControl.tag = indexPath.row // Можно добавить идентификатор для работы с каждым переключателем
-        cell.backgroundColor = .backgroundDayYp
-        return cell
-    }
-    
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
             // Убираем разделитель для последней ячейки
@@ -98,6 +103,42 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         } else {
             // Восстанавливаем стандартный разделитель для остальных ячеек
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath) as? SwitchTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        // Корректируем получение дня недели
+        let weekdayIndex = (indexPath.row + 1) % 7 + 1
+        guard let weekday = Weekday(rawValue: weekdayIndex) else { return UITableViewCell() }
+        
+        cell.textLabel?.text = daysOfWeek[indexPath.row]
+        
+        // Присваиваем tag переключателю с учетом исправленного weekdayIndex
+        cell.switchControl.tag = weekday.rawValue
+        cell.switchControl.addTarget(self, action: #selector(didChangeSwitch(_:)), for: .valueChanged)
+        
+        // Устанавливаем состояние переключателя в зависимости от того, выбран ли день
+        cell.switchControl.isOn = selectedDays.contains(weekday)
+        
+        return cell
+    }
+
+    @objc private func didChangeSwitch(_ sender: UISwitch) {
+        // Корректируем получение дня недели из tag переключателя
+        guard let day = Weekday(rawValue: sender.tag) else {
+            return
+        }
+        
+        // Если переключатель включен, добавляем день в выбранные
+        if sender.isOn {
+            selectedDays.insert(day)
+        } else {
+            // Если выключен, убираем день из выбранных
+            selectedDays.remove(day)
         }
     }
 }

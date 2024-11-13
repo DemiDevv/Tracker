@@ -3,6 +3,14 @@ import UIKit
 class TrackerIrregularEventViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: - UI Elements
+    private let irRegularTitle: UILabel = {
+        let label = UILabel()
+        label.text = "Новое нерегулярное событие"
+        label.font = .systemFont(ofSize: 16)
+        label.tintColor = .black
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
     
     private let titleTextField: UITextField = {
         let textField = UITextField()
@@ -105,6 +113,18 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         return button
     }()
     
+    private let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+
+    private let scrollContentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     private let emojis = ["😀", "😺", "🌸", "🐶", "❤️", "😱", "😇", "😡", "🤔", "🥇", "🎸", "🍔", "😺", "🌸", "🐶", "❤️", "😱", "😇"]
     private let colors: [UIColor] = [
         .systemRed, .systemOrange, .systemYellow, .systemGreen, .systemBlue, .systemPurple,
@@ -134,9 +154,9 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
     }
 
     func updateCollectionViewHeights() {
-        let itemHeight: CGFloat = 52 // Высота одной ячейки
-        let numberOfRows: CGFloat = 3 // Количество строк
-        let totalHeight = itemHeight * numberOfRows + 24 * 2 // 24 отступ сверху и снизу
+        let itemHeight: CGFloat = 52
+        let numberOfRows: CGFloat = 3
+        let totalHeight = itemHeight * numberOfRows + 24 * 2
         
         emojiCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
         colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
@@ -159,7 +179,7 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
     @objc private func didTapCreateButton() {
         guard let title = titleTextField.text, !title.isEmpty
 //              let selectedEmoji = selectedEmoji,
-//              let selectedColor = selectedColor 
+//              let selectedColor = selectedColor
         else {
             return
         }
@@ -172,87 +192,117 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
             return
         }
         
-        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [selectedWeekday])
-
-        let newTrackerRecord = TrackerRecord(trackerID: newTracker.id, date: currentDate)
+        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [])
 
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
+        print("Создаю трекер с title: \(title), emoji: \("😀"), schedule: \(newTracker.schedule)")
+
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
-
-    
     private func setupViewsWithoutStackView() {
-        // Добавляем элементы на view
+        // Добавляем фиксированные элементы на основной view
+        view.addSubview(irRegularTitle)
         view.addSubview(titleTextField)
         view.addSubview(optionsTableView)
-        view.addSubview(emojiCollectionView)
-        view.addSubview(colorCollectionView)
+        
+        // Настраиваем scrollView для скроллируемой части
+        view.addSubview(scrollView)
+        scrollView.addSubview(scrollContentView)
+        
+        // Добавляем элементы в scrollContentView (только скроллируемые части)
+        scrollContentView.addSubview(emojiLabel)
+        scrollContentView.addSubview(emojiCollectionView)
+        scrollContentView.addSubview(colorLabel)
+        scrollContentView.addSubview(colorCollectionView)
+        
+        // Добавляем кнопки на основной view
         view.addSubview(buttonContainerView)
-        view.addSubview(emojiLabel)
-        view.addSubview(colorLabel)
         buttonContainerView.addSubview(cancelButton)
         buttonContainerView.addSubview(createButton)
         
-        // Устанавливаем констрейнты для каждого элемента
+        // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
-            // Констрейнты для titleTextField
-            titleTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            irRegularTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            irRegularTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            titleTextField.topAnchor.constraint(equalTo: irRegularTitle.bottomAnchor, constant: 24),
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             titleTextField.heightAnchor.constraint(equalToConstant: 75),
             
-            // Констрейнты для optionsTableView
             optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24),
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            optionsTableView.heightAnchor.constraint(equalToConstant: 75),
-            
-            // Расстояние 32 между optionsTableView и emojiLabel
-            emojiLabel.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
-            emojiLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
+            optionsTableView.heightAnchor.constraint(equalToConstant: 75)
+        ])
+        
+        // Констрейнты для scrollView
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 16),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: buttonContainerView.topAnchor)
+        ])
+        
+        // Констрейнты для scrollContentView
+        NSLayoutConstraint.activate([
+            scrollContentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            scrollContentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            scrollContentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            scrollContentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            scrollContentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor) // Обеспечиваем горизонтальный скроллинг
+        ])
+        
+        // Констрейнты для скроллируемых элементов
+        NSLayoutConstraint.activate([
+            emojiLabel.topAnchor.constraint(equalTo: scrollContentView.topAnchor, constant: 16),  // Отступ 16
+            emojiLabel.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 28),
             emojiLabel.heightAnchor.constraint(equalToConstant: 18),
             
-            // Расстояние 0 между emojiLabel и emojiCollectionView
-            emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 0),
-            emojiCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            emojiCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            emojiCollectionView.bottomAnchor.constraint(equalTo: colorLabel.topAnchor, constant: -16),
+            emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
+            emojiCollectionView.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 16),
+            emojiCollectionView.trailingAnchor.constraint(equalTo: scrollContentView.trailingAnchor, constant: -16),
             
-            // Расстояние 16 между emojiCollectionView и colorLabel
-            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
-            colorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
+            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),  // Отступ 16
+            colorLabel.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 28),
             colorLabel.heightAnchor.constraint(equalToConstant: 18),
             
-            // Расстояние 0 между colorLabel и colorCollectionView
-            colorCollectionView.topAnchor.constraint(equalTo: colorLabel.bottomAnchor, constant: 0),
-            colorCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            colorCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            colorCollectionView.bottomAnchor.constraint(lessThanOrEqualTo: buttonContainerView.topAnchor, constant: -16),
-            
-            // Констрейнты для кнопок
+            colorCollectionView.topAnchor.constraint(equalTo: colorLabel.bottomAnchor, constant: 8),
+            colorCollectionView.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 16),
+            colorCollectionView.trailingAnchor.constraint(equalTo: scrollContentView.trailingAnchor, constant: -16),
+            colorCollectionView.bottomAnchor.constraint(equalTo: scrollContentView.bottomAnchor, constant: -16)
+        ])
+        
+        // Констрейнты для кнопок
+        NSLayoutConstraint.activate([
+            // Констрейнты для `buttonContainerView`
             buttonContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             buttonContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            buttonContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: 0),
-            buttonContainerView.heightAnchor.constraint(equalToConstant: 50),
+            buttonContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            buttonContainerView.heightAnchor.constraint(equalToConstant: 66), // Увеличиваем высоту на 16 (50 + 16)
             
+            // Констрейнты для `cancelButton`
             cancelButton.leadingAnchor.constraint(equalTo: buttonContainerView.leadingAnchor),
-            cancelButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor),
+            cancelButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor, constant: 16), // Отступ от верхнего края контейнера
             cancelButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor),
             cancelButton.trailingAnchor.constraint(equalTo: createButton.leadingAnchor, constant: -16),
             cancelButton.widthAnchor.constraint(equalTo: createButton.widthAnchor),
             
+            // Констрейнты для `createButton`
             createButton.trailingAnchor.constraint(equalTo: buttonContainerView.trailingAnchor),
-            createButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor),
+            createButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor, constant: 16), // Отступ от верхнего края контейнера
             createButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor)
         ])
+        
+        // Настройка делегатов и источников данных
         emojiCollectionView.dataSource = self
         emojiCollectionView.delegate = self
         colorCollectionView.dataSource = self
         colorCollectionView.delegate = self
     }
-    
+
     // MARK: - UITableViewDataSource
     
     
@@ -360,7 +410,11 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-        return CGSize(width: 52, height: 52) // Устанавливаем размер ячейки 52x52
+        let itemsPerRow: CGFloat = 6 // Количество столбцов
+        let paddingSpace: CGFloat = 18 * 2 + (5 * (itemsPerRow - 1)) // Отступы с краев и между ячейками
+        let availableWidth = collectionView.bounds.width - paddingSpace
+        let widthPerItem = availableWidth / itemsPerRow
+        return CGSize(width: widthPerItem, height: widthPerItem) // Квадратная ячейка
     }
     
     func collectionView(
@@ -370,13 +424,13 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
     ) -> CGFloat {
         return 5 // Отступ между столбцами
     }
-    
+
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
         minimumLineSpacingForSectionAt section: Int
     ) -> CGFloat {
-        return 0 // Отступ между строками
+        return 5 // Отступ между строками
     }
     
     func collectionView(
@@ -384,8 +438,7 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
         layout collectionViewLayout: UICollectionViewLayout,
         insetForSectionAt section: Int
     ) -> UIEdgeInsets {
-        // Устанавливаем отступы сверху, снизу, слева и справа
-        return UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 18)
+        return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) // Отступы вокруг коллекции
     }
 }
 

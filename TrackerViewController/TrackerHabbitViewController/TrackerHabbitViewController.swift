@@ -129,6 +129,8 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
+    private var selectedSchedule = [Weekday]()
+    weak var delegate: ScheduleViewControllerDelegate?
     
     var onTrackerCreated: ((Tracker) -> Void)?
     
@@ -168,17 +170,13 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     @objc private func didTapCreateButton() {
-        guard let title = titleTextField.text, !title.isEmpty
-//              let color = selectedColor,
-//              let emoji = selectedEmoji 
-        else {
+        guard let title = titleTextField.text, !title.isEmpty else {
             return
         }
-
-        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday])
-
-        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
+        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: selectedSchedule)
+        
+        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
@@ -190,7 +188,12 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         emojiCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
         colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
     }
-
+    
+    private func presentScheduleViewController() {
+        let scheduleVC = ScheduleViewController()
+        scheduleVC.delegate = self
+        present(scheduleVC, animated: true, completion: nil)
+    }
     
     private func setupViewsWithoutStackView() {
         // Добавляем фиксированные элементы на основной view
@@ -340,10 +343,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.row == 1 {
-            let scheduleVC = ScheduleViewController()
-            scheduleVC.modalPresentationStyle = .pageSheet
-            present(scheduleVC, animated: true, completion: nil)
-
+            presentScheduleViewController()
         }
     }
     
@@ -441,4 +441,9 @@ extension TrackerHabbitViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-
+extension TrackerHabbitViewController: ScheduleViewControllerDelegate {
+    func didSelectSchedule(_ selectedDays: [Weekday]) {
+        print("Selected days: \(selectedDays)")  // Печать для проверки
+        selectedSchedule = selectedDays
+    }
+}

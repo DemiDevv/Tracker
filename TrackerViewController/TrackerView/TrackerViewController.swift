@@ -34,6 +34,7 @@ final class TrackerViewController: UIViewController {
         picker.layer.masksToBounds = true
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
+        picker.maximumDate = Date()
         return picker
     }()
     
@@ -90,11 +91,14 @@ final class TrackerViewController: UIViewController {
     
     var categories: [TrackerCategory] = [
         TrackerCategory(title: "Обязательно", trackers: [
-            Tracker(id: UUID(), title: "Поесть курицу", color: .systemBlue, emoji: "🌸", schedule: [.monday]),
-            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .systemRed, emoji: "❤️", schedule: [.tuesday]),
+            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🍔", schedule: [.monday]),
+            Tracker(id: UUID(), title: "Попить воду", color: .colorSelection2, emoji: "😺", schedule: [.monday]),
+            Tracker(id: UUID(), title: "Поспать", color: .colorSelection5, emoji: "🌸", schedule: [.monday]),
+            
+            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection8, emoji: "❤️", schedule: [.tuesday]),
         ]),
         TrackerCategory(title: "Невероятно", trackers: [
-            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .systemGreen, emoji: "🐶", schedule: [.wednesday, .tuesday])
+            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection12, emoji: "🐶", schedule: [.monday, .wednesday, .tuesday])
         ])
     ]
 
@@ -352,6 +356,8 @@ extension TrackerViewController: TrackerCellDelegate {
 
 // MARK: - UICollectionViewDelegateFlowLayout
 extension TrackerViewController: UICollectionViewDelegateFlowLayout {
+    
+    // Размеры ячеек
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let padding: CGFloat = 16 + 9 // Отступы между ячейками и краями экрана
         let availableWidth = collectionView.bounds.width - padding
@@ -360,18 +366,22 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
         return CGSize(width: cellWidth, height: 120)
     }
 
+    // Размер заголовка секции
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: collectionView.bounds.width, height: 40) // Высота заголовка секции
     }
     
+    // Отступы от краёв экрана для секции
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16) // Отступы от краев экрана
+        return UIEdgeInsets(top: 0, left: 16, bottom: 32, right: 16) // Установите нижний отступ для секции
     }
     
+    // Расстояние между строками
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 12 // Расстояние между строками ячеек
+        return 32 // Расстояние между строками (секциями)
     }
     
+    // Расстояние между ячейками в строке
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         return 9 // Расстояние между ячейками в строке
     }
