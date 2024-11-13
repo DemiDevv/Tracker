@@ -42,7 +42,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     // Количество дней
     let daysLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .black
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
