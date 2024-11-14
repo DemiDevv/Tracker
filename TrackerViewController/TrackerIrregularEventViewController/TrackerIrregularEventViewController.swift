@@ -145,22 +145,28 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
         
-        setupViewsWithoutStackView()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
         updateCollectionViewHeights()
+        setupViewsWithoutStackView()
     }
 
     func updateCollectionViewHeights() {
-        let itemHeight: CGFloat = 52
-        let numberOfRows: CGFloat = 3
-        let totalHeight = itemHeight * numberOfRows + 24 * 2
+        let itemHeight: CGFloat = 52 // Высота одной ячейки
+        let itemsPerRow: CGFloat = 6 // Количество столбцов
+        let interItemSpacing: CGFloat = 5 // Отступ между элементами
+
+        // Определяем количество строк
+        let emojiRows = ceil(CGFloat(emojis.count) / itemsPerRow)
+        let colorRows = ceil(CGFloat(colors.count) / itemsPerRow)
         
-        emojiCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
-        colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
+        // Рассчитываем итоговую высоту коллекции
+        let emojiHeight = emojiRows * itemHeight + max(emojiRows - 1, 0) * interItemSpacing
+        let colorHeight = colorRows * itemHeight + max(colorRows - 1, 0) * interItemSpacing
+        
+        // Устанавливаем высоты
+        emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
+        colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
     }
+
     
     @objc private func textFieldDidChange() {
         if let text = titleTextField.text, !text.isEmpty {
@@ -192,7 +198,7 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
             return
         }
         
-        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [])
+        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday])
 
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
@@ -383,12 +389,16 @@ extension TrackerIrregularEventViewController: UICollectionViewDataSource {
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
         if collectionView == emojiCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as! TrackerHabbitViewCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as? TrackerHabbitViewCell else {
+                return UICollectionViewCell()
+            }
             cell.titleLabel.text = emojis[indexPath.row]
             cell.colorView.isHidden = true // Скрываем colorView для Emoji ячейки
             return cell
         } else if collectionView == colorCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! TrackerHabbitViewCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? TrackerHabbitViewCell else {
+                return UICollectionViewCell()
+            }
             cell.colorView.backgroundColor = colors[indexPath.row]
             cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
             cell.colorView.isHidden = false

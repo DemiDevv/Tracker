@@ -182,12 +182,22 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
 
     func updateCollectionViewHeights() {
         let itemHeight: CGFloat = 52 // Высота одной ячейки
-        let numberOfRows: CGFloat = 3 // Количество строк
-        let totalHeight = itemHeight * numberOfRows + 24 * 2 // 24 отступ сверху и снизу
+        let itemsPerRow: CGFloat = 6 // Количество столбцов
+        let interItemSpacing: CGFloat = 5 // Отступ между элементами
+
+        // Определяем количество строк
+        let emojiRows = ceil(CGFloat(emojis.count) / itemsPerRow)
+        let colorRows = ceil(CGFloat(colors.count) / itemsPerRow)
         
-        emojiCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
-        colorCollectionView.heightAnchor.constraint(equalToConstant: totalHeight).isActive = true
+        // Рассчитываем итоговую высоту коллекции
+        let emojiHeight = emojiRows * itemHeight + max(emojiRows - 1, 0) * interItemSpacing
+        let colorHeight = colorRows * itemHeight + max(colorRows - 1, 0) * interItemSpacing
+        
+        // Устанавливаем высоты
+        emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
+        colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
     }
+
     
     private func presentScheduleViewController() {
         let scheduleVC = ScheduleViewController()
@@ -382,12 +392,16 @@ extension TrackerHabbitViewController: UICollectionViewDataSource {
         cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
         if collectionView == emojiCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as! TrackerHabbitViewCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as? TrackerHabbitViewCell else {
+                return UICollectionViewCell()
+            }
             cell.titleLabel.text = emojis[indexPath.row]
             cell.colorView.isHidden = true // Скрываем colorView для Emoji ячейки
             return cell
         } else if collectionView == colorCollectionView {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as! TrackerHabbitViewCell
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? TrackerHabbitViewCell else {
+                return UICollectionViewCell()
+            }
             cell.colorView.backgroundColor = colors[indexPath.row]
             cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
             cell.colorView.isHidden = false
