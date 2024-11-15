@@ -353,6 +353,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.row == 1 {
+            titleTextField.resignFirstResponder()
             presentScheduleViewController()
         }
     }
