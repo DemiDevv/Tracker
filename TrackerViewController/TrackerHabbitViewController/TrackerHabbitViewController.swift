@@ -174,7 +174,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             return
         }
         
-        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: selectedSchedule)
+        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: selectedSchedule, type: .habbit)
         
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)

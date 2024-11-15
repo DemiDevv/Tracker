@@ -91,14 +91,14 @@ final class TrackerViewController: UIViewController {
     
     var categories: [TrackerCategory] = [
         TrackerCategory(title: "Обязательно", trackers: [
-            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🍔", schedule: [.monday]),
-            Tracker(id: UUID(), title: "Попить воду", color: .colorSelection2, emoji: "😺", schedule: [.monday]),
-            Tracker(id: UUID(), title: "Поспать", color: .colorSelection5, emoji: "🌸", schedule: [.monday]),
+            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🍔", schedule: [.monday], type: .habbit),
+            Tracker(id: UUID(), title: "Попить воду", color: .colorSelection2, emoji: "😺", schedule: [.monday], type: .habbit),
+            Tracker(id: UUID(), title: "Поспать", color: .colorSelection5, emoji: "🌸", schedule: [.monday], type: .habbit),
             
-            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection8, emoji: "❤️", schedule: [.tuesday]),
+            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection8, emoji: "❤️", schedule: [.tuesday], type: .habbit),
         ]),
         TrackerCategory(title: "Невероятно", trackers: [
-            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection12, emoji: "🐶", schedule: [.monday, .wednesday, .tuesday])
+            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection12, emoji: "🐶", schedule: [.monday, .wednesday, .tuesday], type: .habbit)
         ])
     ]
 
@@ -274,9 +274,15 @@ final class TrackerViewController: UIViewController {
     }
     
     private func isTrackerCompletedToday(id: UUID) -> Bool {
-        completedTrackers.contains { trackerRecord in
-            let isSameDay = Calendar.current.isDate(trackerRecord.date, inSameDayAs: datePicker.date)
-            return trackerRecord.trackerID == id && isSameDay
+        if let tracker = filteredCategories
+            .flatMap({ $0.trackers })
+            .first(where: { $0.id == id }),
+           tracker.type == .event {
+            return completedTrackers.contains { $0.trackerID == id }
+        }
+
+        return completedTrackers.contains {
+            $0.trackerID == id && Calendar.current.isDate($0.date, inSameDayAs: datePicker.date)
         }
     }
 }
@@ -304,26 +310,31 @@ extension TrackerViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCollectionViewCell.identifier, for: indexPath) as? TrackerCollectionViewCell
-        else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TrackerCollectionViewCell.identifier, for: indexPath) as? TrackerCollectionViewCell else {
             return UICollectionViewCell()
         }
 
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.row]
         cell.delegate = self
-        
+
         let isCompletedToday = isTrackerCompletedToday(id: tracker.id)
-        let completedDays = completedTrackers.filter {
-            $0.trackerID == tracker.id
-        }.count
+        let completedDays: Int
+
+        if tracker.type == .event {
+            completedDays = completedTrackers.contains { $0.trackerID == tracker.id } ? 1 : 0 // 0 дней для новых событий
+        } else {
+            completedDays = completedTrackers.filter { $0.trackerID == tracker.id }.count
+        }
+
         cell.configure(with: tracker,
                        isCompletedToday: isCompletedToday,
                        indexPath: indexPath,
-                       completedDays: completedDays
-        )
+                       completedDays: completedDays)
 
         return cell
     }
+
+
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         if kind == UICollectionView.elementKindSectionHeader {
@@ -338,20 +349,57 @@ extension TrackerViewController: UICollectionViewDataSource {
 
 extension TrackerViewController: TrackerCellDelegate {
     func completeTracker(id: UUID, at indexPath: IndexPath) {
-        let trackerRecord = TrackerRecord(trackerID: id, date: datePicker.date)
-        completedTrackers.append(trackerRecord)
-        
+        guard let tracker = filteredCategories
+                .flatMap({ $0.trackers })
+                .first(where: { $0.id == id }) else { return }
+
+        // Привычка: Добавляем запись за текущий день
+        if tracker.type == .habbit {
+            let isAlreadyCompleted = completedTrackers.contains {
+                $0.trackerID == id && Calendar.current.isDate($0.date, inSameDayAs: datePicker.date)
+            }
+            guard !isAlreadyCompleted else { return }
+
+            let trackerRecord = TrackerRecord(trackerID: id, date: datePicker.date)
+            completedTrackers.append(trackerRecord)
+        }
+
+        // Событие: Добавляем или убираем глобальную запись
+        else if tracker.type == .event {
+            if completedTrackers.contains(where: { $0.trackerID == id }) {
+                uncompleteTracker(id: id, at: indexPath)
+                return
+            } else {
+                completedTrackers.append(TrackerRecord(trackerID: id, date: Date.distantPast))
+            }
+        }
+
         collectionView.reloadItems(at: [indexPath])
     }
+
+
     
     func uncompleteTracker(id: UUID, at indexPath: IndexPath) {
-        completedTrackers.removeAll { trackerRecord in
-            let isSameDay = Calendar.current.isDate(trackerRecord.date, inSameDayAs: datePicker.date)
-            return trackerRecord.trackerID == id && isSameDay
+        guard let tracker = filteredCategories
+                .flatMap({ $0.trackers })
+                .first(where: { $0.id == id }) else { return }
+
+        // Привычка: Удаляем запись за текущий день
+        if tracker.type == .habbit {
+            completedTrackers.removeAll { trackerRecord in
+                trackerRecord.trackerID == id &&
+                Calendar.current.isDate(trackerRecord.date, inSameDayAs: datePicker.date)
+            }
         }
-        
+
+        // Событие: Удаляем глобальную запись
+        else if tracker.type == .event {
+            completedTrackers.removeAll { $0.trackerID == id }
+        }
+
         collectionView.reloadItems(at: [indexPath])
     }
+
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
