@@ -189,12 +189,8 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         else {
             return
         }
-
-        let currentDate = Date()
-        let calendar = Calendar.current
-        let weekday = calendar.component(.weekday, from: currentDate)
         
-        let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday], type: .event)
+        let newTracker = Tracker(id: UUID(), title: title, color: color, emoji: emoji, schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday], type: .event)
 
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
