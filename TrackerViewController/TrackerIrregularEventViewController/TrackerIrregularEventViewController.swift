@@ -183,9 +183,9 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
     }
     
     @objc private func didTapCreateButton() {
-        guard let title = titleTextField.text, !title.isEmpty
-//              let selectedEmoji = selectedEmoji,
-//              let selectedColor = selectedColor
+        guard let title = titleTextField.text, !title.isEmpty,
+              let color = selectedColor,
+              let emoji = selectedEmoji
         else {
             return
         }
@@ -193,10 +193,6 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         let currentDate = Date()
         let calendar = Calendar.current
         let weekday = calendar.component(.weekday, from: currentDate)
-
-        guard let selectedWeekday = Weekday(rawValue: weekday) else {
-            return
-        }
         
         let newTracker = Tracker(id: UUID(), title: title, color: .colorSelection1, emoji: "😀", schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday], type: .event)
 
@@ -307,6 +303,9 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
         emojiCollectionView.delegate = self
         colorCollectionView.dataSource = self
         colorCollectionView.delegate = self
+        
+        emojiCollectionView.allowsMultipleSelection = false
+        colorCollectionView.allowsMultipleSelection = false
     }
 
     // MARK: - UITableViewDataSource
@@ -399,8 +398,8 @@ extension TrackerIrregularEventViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? TrackerHabbitViewCell else {
                 return UICollectionViewCell()
             }
-            cell.colorView.backgroundColor = colors[indexPath.row]
-            cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
+            cell.innerColorView.backgroundColor = colors[indexPath.row]
+            cell.titleLabel.isHidden = true
             cell.colorView.isHidden = false
             return cell
         }
@@ -410,7 +409,24 @@ extension TrackerIrregularEventViewController: UICollectionViewDataSource {
 
 extension TrackerIrregularEventViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
+        
+        cell.titleLabel.backgroundColor = .backgroundDayYp
+        cell.colorView.layer.borderColor = UIColor.grayYp.cgColor
+        
+        if collectionView == emojiCollectionView {
+            selectedEmoji = emojis[indexPath.row]
+        } else if collectionView == colorCollectionView {
+            selectedColor = colors[indexPath.row]
+        }
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell
+        cell?.titleLabel.backgroundColor = .white
+        cell?.colorView.layer.borderColor = UIColor.white.cgColor
+    }
+
 }
 
 
@@ -420,19 +436,22 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
         layout collectionViewLayout: UICollectionViewLayout,
         sizeForItemAt indexPath: IndexPath
     ) -> CGSize {
-        let itemsPerRow: CGFloat = 6 // Количество столбцов
-        let paddingSpace: CGFloat = 18 * 2 + (5 * (itemsPerRow - 1)) // Отступы с краев и между ячейками
-        let availableWidth = collectionView.bounds.width - paddingSpace
+        let itemsPerRow: CGFloat = 6
+        let interItemSpacing: CGFloat = 5
+        let edgeInsets: CGFloat = 16
+        let totalSpacing = interItemSpacing * (itemsPerRow - 1)
+        let availableWidth = collectionView.bounds.width - edgeInsets * 2 - totalSpacing
         let widthPerItem = availableWidth / itemsPerRow
-        return CGSize(width: widthPerItem, height: widthPerItem) // Квадратная ячейка
+        return CGSize(width: widthPerItem, height: widthPerItem)
     }
+
     
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
         minimumInteritemSpacingForSectionAt section: Int
     ) -> CGFloat {
-        return 5 // Отступ между столбцами
+        return 5// Отступ между столбцами
     }
 
     func collectionView(
@@ -440,7 +459,7 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
         layout collectionViewLayout: UICollectionViewLayout,
         minimumLineSpacingForSectionAt section: Int
     ) -> CGFloat {
-        return 5 // Отступ между строками
+        return 0 // Отступ между строками
     }
     
     func collectionView(
