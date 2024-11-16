@@ -172,7 +172,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     @objc private func didTapCreateButton() {
         guard let title = titleTextField.text, !title.isEmpty,
               let color = selectedColor,
-              let emoji = selectedEmoji
+              let emoji = selectedEmoji, !selectedSchedule.isEmpty
         else {
             return
         }
