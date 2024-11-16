@@ -241,13 +241,17 @@ final class TrackerViewController: UIViewController {
         let calendar = Calendar.current
         let filterWeekday = calendar.component(.weekday, from: datePicker.date)
         let filterText = (trackerSearchBar.text ?? "").lowercased()
+        print("Search filter: \(filterText)")
         
         filteredCategories = categories.compactMap { category in
             let trackers = category.trackers.filter { tracker in
                 let textCondition = filterText.isEmpty ||
                     tracker.title.lowercased().contains(filterText)
+                print("Checking tracker title: \(tracker.title), condition: \(textCondition)")
+
                 let dateCondition = tracker.schedule.contains { weekDay in
-                    weekDay.rawValue == filterWeekday
+                    print("Checking weekday: \(weekDay.rawValue), filter weekday: \(filterWeekday)")
+                    return weekDay.rawValue == filterWeekday
                 }
                 return textCondition && dateCondition
             }
