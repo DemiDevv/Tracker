@@ -422,12 +422,12 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
         cell.titleLabel.backgroundColor = .backgroundDayYp
-        cell.colorView.layer.borderColor = UIColor.grayYp.cgColor
         
         if collectionView == emojiCollectionView {
             selectedEmoji = emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
             selectedColor = colors[indexPath.row]
+            cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
     

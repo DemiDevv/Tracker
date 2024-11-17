@@ -19,6 +19,7 @@ class TrackerHabbitViewCell: UICollectionViewCell {
         view.layer.masksToBounds = true
         view.layer.borderWidth = 3 // Толщина рамки
         view.layer.borderColor = UIColor.white.cgColor // Цвет рамки
+        view.layer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
