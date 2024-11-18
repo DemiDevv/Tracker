@@ -122,7 +122,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return view
     }()
     
-    private let emojis = ["😀", "😺", "🌸", "🐶", "❤️", "😱", "😇", "😡", "🤔", "🥇", "🎸", "🍔", "😺", "🌸", "🐶", "❤️", "😱", "😇"]
+    private let emojis = [
+        "😊", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
+    ]
+
     private let colors: [UIColor] = [
         .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
@@ -263,7 +266,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         
         // Констрейнты для scrollView
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 16),
+            scrollView.topAnchor.constraint(equalTo: optionsTableView.bottomAnchor, constant: 32),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: buttonContainerView.topAnchor)
@@ -280,9 +283,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         
         // Констрейнты для скроллируемых элементов
         NSLayoutConstraint.activate([
-            emojiLabel.topAnchor.constraint(equalTo: scrollContentView.topAnchor, constant: 16),  // Отступ 16
+            emojiLabel.topAnchor.constraint(equalTo: scrollContentView.topAnchor, constant: 0),
             emojiLabel.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 28),
-            emojiLabel.heightAnchor.constraint(equalToConstant: 18),
+            emojiLabel.heightAnchor.constraint(equalToConstant: 52),
+            emojiLabel.widthAnchor.constraint(equalToConstant: 52),
             
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
             emojiCollectionView.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 16),
@@ -466,20 +470,9 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
 }
 
 extension TrackerHabbitViewController: UICollectionViewDelegateFlowLayout {
-    func collectionView(
-        _ collectionView: UICollectionView,
-        layout collectionViewLayout: UICollectionViewLayout,
-        sizeForItemAt indexPath: IndexPath
-    ) -> CGSize {
-        let itemsPerRow: CGFloat = 6
-        let interItemSpacing: CGFloat = 5
-        let edgeInsets: CGFloat = 16
-        let totalSpacing = interItemSpacing * (itemsPerRow - 1)
-        let availableWidth = collectionView.bounds.width - edgeInsets * 2 - totalSpacing
-        let widthPerItem = availableWidth / itemsPerRow
-        return CGSize(width: widthPerItem, height: widthPerItem)
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: 52, height: 52)
     }
-
     
     func collectionView(
         _ collectionView: UICollectionView,
