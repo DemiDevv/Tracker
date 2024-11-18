@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3035EF892C96F80400897ADE /* TrackerBody.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3035EF882C96F80400897ADE /* TrackerBody.swift */; };
+		303EA4222CEBC87D003B170C /* PaddedTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 303EA4212CEBC87D003B170C /* PaddedTextField.swift */; };
 		304E7A1C2C8621B000F55F68 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A1B2C8621B000F55F68 /* AppDelegate.swift */; };
 		304E7A1E2C8621B000F55F68 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A1D2C8621B000F55F68 /* SceneDelegate.swift */; };
 		304E7A252C8621B100F55F68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 304E7A242C8621B100F55F68 /* Assets.xcassets */; };
@@ -27,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		3035EF882C96F80400897ADE /* TrackerBody.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerBody.swift; sourceTree = "<group>"; };
+		303EA4212CEBC87D003B170C /* PaddedTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedTextField.swift; sourceTree = "<group>"; };
 		304E7A182C8621B000F55F68 /* Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		304E7A1B2C8621B000F55F68 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		304E7A1D2C8621B000F55F68 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -165,6 +167,7 @@
 			children = (
 				30F88C232CB6F07600A84469 /* TrackerHabbitViewController.swift */,
 				30D8F32B2CC7B0C900B2986D /* TrackerHabbitViewCell.swift */,
+				303EA4212CEBC87D003B170C /* PaddedTextField.swift */,
 			);
 			path = TrackerHabbitViewController;
 			sourceTree = "<group>";
@@ -240,6 +243,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				30D8F32F2CC9568600B2986D /* ScheduleViewController.swift in Sources */,
+				303EA4222CEBC87D003B170C /* PaddedTextField.swift in Sources */,
 				30F88C212CB5603600A84469 /* TrackerIrregularEventViewController.swift in Sources */,
 				304E7A342C8759E200F55F68 /* TrackerViewController.swift in Sources */,
 				30B13E722CA5517100386389 /* TrackerCreateViewController.swift in Sources */,

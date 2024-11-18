@@ -379,6 +379,7 @@ extension TrackerViewController: TrackerCellDelegate {
         }
 
         collectionView.reloadItems(at: [indexPath])
+        collectionView.reloadData()
     }
 
 
@@ -402,6 +403,7 @@ extension TrackerViewController: TrackerCellDelegate {
         }
 
         collectionView.reloadItems(at: [indexPath])
+        collectionView.reloadData()
     }
 
 }

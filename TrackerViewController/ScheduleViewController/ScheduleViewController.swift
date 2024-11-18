@@ -55,6 +55,8 @@ final class ScheduleViewController: UIViewController {
         tableView.register(SwitchTableViewCell.self, forCellReuseIdentifier: "SwitchCell")
         tableView.delegate = self
         tableView.dataSource = self
+        tableView.isScrollEnabled = false
+
         
         view.addSubview(tableView)
         view.addSubview(scheduleLabel)
@@ -123,6 +125,13 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         
         // Устанавливаем состояние переключателя в зависимости от того, выбран ли день
         cell.switchControl.isOn = selectedDays.contains(weekday)
+        
+        // Убираем выделение ячейки
+        cell.selectionStyle = .none
+        
+        // Задаем фон ячейки (красный цвет)
+        cell.backgroundColor = .backgroundDayYp
+        
         
         return cell
     }

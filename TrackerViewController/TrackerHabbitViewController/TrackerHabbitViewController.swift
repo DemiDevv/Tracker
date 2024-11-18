@@ -13,21 +13,31 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }()
     
     private let titleTextField: UITextField = {
-        let textField = UITextField()
+        let textField = PaddedTextField()
+        textField.clearButtonMode = .whileEditing
         textField.placeholder = "Введите название трекера"
         textField.borderStyle = .none
         textField.backgroundColor = .backgroundDayYp
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
-        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: textField.frame.height))
-        textField.leftView = paddingView
         textField.leftViewMode = .always
         textField.translatesAutoresizingMaskIntoConstraints = false
+
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         return textField
     }()
     
-    
+    // Метка для отображения максимального количества символов
+    private let maxLengthLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Ограничение 38 символов"
+        label.font = .systemFont(ofSize: 17)
+        label.textColor = .redYp
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.isHidden = true
+        return label
+    }()
+
     private let optionsTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.isScrollEnabled = false
@@ -130,6 +140,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
     
+    private var optionsTableViewTopConstraint: NSLayoutConstraint!
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var selectedSchedule = [Weekday]()
@@ -156,15 +167,29 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         updateCollectionViewHeights()
         
     }
-
     
     @objc private func textFieldDidChange() {
-        if let text = titleTextField.text, !text.isEmpty {
-            createButton.isEnabled = true
-            createButton.backgroundColor = .blackDayYp
-        } else {
+        guard let text = titleTextField.text else { return }
+        
+        if text.count > 38 {
+            maxLengthLabel.isHidden = false
             createButton.isEnabled = false
             createButton.backgroundColor = .grayYp
+            
+            // Меняем отступ на 32, если лейбл виден
+            optionsTableViewTopConstraint.constant = 62
+        } else {
+            maxLengthLabel.isHidden = true
+            createButton.isEnabled = !text.isEmpty
+            createButton.backgroundColor = text.isEmpty ? .grayYp : .blackDayYp
+            
+            // Меняем отступ на 24, если лейбл скрыт
+            optionsTableViewTopConstraint.constant = 24
+        }
+        
+        // Анимируем изменение отступа
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
         }
     }
     
@@ -187,9 +212,9 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     func updateCollectionViewHeights() {
-        let itemHeight: CGFloat = 52 // Высота одной ячейки
-        let itemsPerRow: CGFloat = 6 // Количество столбцов
-        let interItemSpacing: CGFloat = 5 // Отступ между элементами
+        let itemHeight: CGFloat = 52
+        let itemsPerRow: CGFloat = 6
+        let interItemSpacing: CGFloat = 5
 
         // Определяем количество строк
         let emojiRows = ceil(CGFloat(emojis.count) / itemsPerRow)
@@ -231,6 +256,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         // Добавляем фиксированные элементы на основной view
         view.addSubview(habbitTitle)
         view.addSubview(titleTextField)
+        view.addSubview(maxLengthLabel)
         view.addSubview(optionsTableView)
         
         // Настраиваем scrollView для скроллируемой части
@@ -248,6 +274,10 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         buttonContainerView.addSubview(cancelButton)
         buttonContainerView.addSubview(createButton)
         
+        optionsTableViewTopConstraint = optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24)
+        optionsTableViewTopConstraint.isActive = true
+
+        
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
             habbitTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
@@ -258,7 +288,12 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             titleTextField.heightAnchor.constraint(equalToConstant: 75),
             
-            optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24),
+            maxLengthLabel.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 8),
+            maxLengthLabel.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+            maxLengthLabel.heightAnchor.constraint(equalToConstant: 22),
+            
+            // Устанавливаем констрейнт с сохранением ссылки
+            optionsTableViewTopConstraint,
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             optionsTableView.heightAnchor.constraint(equalToConstant: 150)
@@ -292,7 +327,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             emojiCollectionView.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 16),
             emojiCollectionView.trailingAnchor.constraint(equalTo: scrollContentView.trailingAnchor, constant: -16),
             
-            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),  // Отступ 16
+            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
             colorLabel.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 28),
             colorLabel.heightAnchor.constraint(equalToConstant: 18),
             
@@ -308,9 +343,8 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
             buttonContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             buttonContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             buttonContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            buttonContainerView.heightAnchor.constraint(equalToConstant: 66), // Увеличиваем высоту на 16 (50 + 16)
+            buttonContainerView.heightAnchor.constraint(equalToConstant: 66),
             
-            // Констрейнты для `cancelButton`
             cancelButton.leadingAnchor.constraint(equalTo: buttonContainerView.leadingAnchor),
             cancelButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor, constant: 16), // Отступ от верхнего края контейнера
             cancelButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor),
