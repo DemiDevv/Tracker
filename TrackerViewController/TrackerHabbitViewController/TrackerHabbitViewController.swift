@@ -207,6 +207,23 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         present(scheduleVC, animated: true, completion: nil)
     }
     
+    private func selectedScheduleString() -> String {
+        guard !selectedSchedule.isEmpty else { return "" }
+        
+        let weekdayShortNames: [Weekday: String] = [
+            .monday: "Пн",
+            .tuesday: "Вт",
+            .wednesday: "Ср",
+            .thursday: "Чт",
+            .friday: "Пт",
+            .saturday: "Сб",
+            .sunday: "Вс"
+        ]
+        
+        let shortNames = selectedSchedule.compactMap { weekdayShortNames[$0] }
+        return shortNames.joined(separator: ", ")
+    }
+
     private func setupViews() {
         // Добавляем фиксированные элементы на основной view
         view.addSubview(habbitTitle)
@@ -327,18 +344,28 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "optionCell", for: indexPath)
-        
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "optionCell")
+
         if indexPath.row == 0 {
             cell.textLabel?.text = "Категория"
-        } else {
+            cell.detailTextLabel?.text = "Новая категория"
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
+            cell.detailTextLabel?.textColor = .grayYp
+        } else if indexPath.row == 1 {
             cell.textLabel?.text = "Расписание"
+            cell.detailTextLabel?.text = selectedScheduleString()
+            print("\(selectedScheduleString())")
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
+            cell.detailTextLabel?.textColor = .grayYp
         }
-        
+
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
         return cell
     }
+
+
+
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
@@ -421,7 +448,7 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
-        cell.titleLabel.backgroundColor = .backgroundDayYp
+        cell.titleLabel.backgroundColor = .lightGrayYp
         
         if collectionView == emojiCollectionView {
             selectedEmoji = emojis[indexPath.row]
@@ -437,7 +464,6 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
         cell?.colorView.layer.borderColor = UIColor.white.cgColor
     }
 }
-
 
 extension TrackerHabbitViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(
@@ -484,5 +510,6 @@ extension TrackerHabbitViewController: ScheduleViewControllerDelegate {
     func didSelectSchedule(_ selectedDays: [Weekday]) {
         print("Selected days: \(selectedDays)")  // Печать для проверки
         selectedSchedule = selectedDays
+        optionsTableView.reloadData()
     }
 }

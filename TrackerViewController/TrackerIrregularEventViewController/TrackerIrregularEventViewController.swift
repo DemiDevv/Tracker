@@ -317,10 +317,14 @@ class TrackerIrregularEventViewController: UIViewController, UITableViewDataSour
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "optionCell", for: indexPath)
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "optionCell")
+        
         cell.textLabel?.text = "Категория"
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
+        cell.detailTextLabel?.text = "Новая категория"
+        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
+        cell.detailTextLabel?.textColor = .grayYp
         return cell
     }
     
@@ -407,13 +411,13 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
-        cell.titleLabel.backgroundColor = .backgroundDayYp
-        cell.colorView.layer.borderColor = UIColor.grayYp.cgColor
+        cell.titleLabel.backgroundColor = .lightGrayYp
         
         if collectionView == emojiCollectionView {
             selectedEmoji = emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
             selectedColor = colors[indexPath.row]
+            cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
     
@@ -422,7 +426,6 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegate {
         cell?.titleLabel.backgroundColor = .white
         cell?.colorView.layer.borderColor = UIColor.white.cgColor
     }
-
 }
 
 
