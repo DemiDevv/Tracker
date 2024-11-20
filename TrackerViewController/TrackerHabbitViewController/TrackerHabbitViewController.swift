@@ -1,9 +1,9 @@
 import UIKit
 
-class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     // MARK: - UI Elements
-    private let habbitTitle: UILabel = {
+    private lazy var habbitTitle: UILabel = {
         let label = UILabel()
         label.text = "Новая привычка"
         label.font = .systemFont(ofSize: 16)
@@ -12,7 +12,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return label
     }()
     
-    private let titleTextField: UITextField = {
+    private lazy var titleTextField: UITextField = {
         let textField = PaddedTextField()
         textField.clearButtonMode = .whileEditing
         textField.placeholder = "Введите название трекера"
@@ -28,7 +28,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }()
     
     // Метка для отображения максимального количества символов
-    private let maxLengthLabel: UILabel = {
+    private lazy var maxLengthLabel: UILabel = {
         let label = UILabel()
         label.text = "Ограничение 38 символов"
         label.font = .systemFont(ofSize: 17)
@@ -38,7 +38,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return label
     }()
 
-    private let optionsTableView: UITableView = {
+    private lazy var optionsTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.isScrollEnabled = false
         tableView.layer.cornerRadius = 16
@@ -52,7 +52,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     
     
     
-    private let emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let emojiLabel = UILabel()
         emojiLabel.text = "Emoji"
         emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -61,7 +61,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         
     }()
     
-    private let colorLabel: UILabel = {
+    private lazy var colorLabel: UILabel = {
         let emojiLabel = UILabel()
         emojiLabel.text = "Цвет"
         emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
@@ -70,7 +70,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         
     }()
     
-    private let emojiCollectionView: UICollectionView = {
+    private lazy var emojiCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
@@ -79,7 +79,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return collectionView
     }()
     
-    private let colorCollectionView: UICollectionView = {
+    private lazy var colorCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "ColorCell")
@@ -89,14 +89,14 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }()
     
     
-    private let buttonContainerView: UIView = {
+    private lazy var buttonContainerView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
     // Кнопка "Создать"
-    private let createButton: UIButton = {
+    private lazy var createButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Создать", for: .normal)
         button.backgroundColor = .systemGray
@@ -108,7 +108,7 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
     }()
     
     // Кнопка "Отменить"
-    private let cancelButton: UIButton = {
+    private lazy var cancelButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Отменить", for: .normal)
         button.setTitleColor(.systemRed, for: .normal)
@@ -120,13 +120,13 @@ class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITa
         return button
     }()
 
-    private let scrollView: UIScrollView = {
+    private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
 
-    private let scrollContentView: UIView = {
+    private lazy var scrollContentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view

@@ -1,7 +1,7 @@
 import UIKit
 
 final class TrackerCreateViewController: UIViewController {
-    private let trackerCreateLabel: UILabel = {
+    private lazy var trackerCreateLabel: UILabel = {
         let label = UILabel()
         label.text = "Создание трекера"
         label.font = .systemFont(ofSize: 16)
@@ -10,7 +10,7 @@ final class TrackerCreateViewController: UIViewController {
         return label
     }()
     
-    private let addHabitButton: UIButton = {
+    private lazy var addHabitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Привычка", for: .normal)
         button.tintColor = .black
@@ -23,7 +23,7 @@ final class TrackerCreateViewController: UIViewController {
         return button
     }()
     
-    private let addIrregEventButton: UIButton = {
+    private lazy var addIrregEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Нерегулярное событие", for: .normal)
         button.tintColor = .black
@@ -72,7 +72,7 @@ final class TrackerCreateViewController: UIViewController {
         ])
     }
     
-    @objc func didHabitButtonTap() {
+    @objc private func didHabitButtonTap() {
         let trackerCreateVC = TrackerHabbitViewController()
         if let navigationController = self.navigationController {
             navigationController.pushViewController(trackerCreateVC, animated: true)
@@ -82,7 +82,7 @@ final class TrackerCreateViewController: UIViewController {
         }
     }
     
-    @objc func didIrregEventButtonTap() {
+    @objc private func didIrregEventButtonTap() {
         let trackerCreateVC = TrackerIrregularEventViewController()
         if let navigationController = self.navigationController {
             navigationController.pushViewController(trackerCreateVC, animated: true)

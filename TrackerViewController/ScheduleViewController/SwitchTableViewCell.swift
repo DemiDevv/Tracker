@@ -1,8 +1,8 @@
 import UIKit
 
-class SwitchTableViewCell: UITableViewCell {
+final class SwitchTableViewCell: UITableViewCell {
 
-    let switchControl: UISwitch = {
+    lazy var switchControl: UISwitch = {
         let switchControl = UISwitch()
         switchControl.onTintColor = .blueYp
         switchControl.translatesAutoresizingMaskIntoConstraints = false

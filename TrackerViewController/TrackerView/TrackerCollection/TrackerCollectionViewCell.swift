@@ -5,11 +5,11 @@ protocol TrackerCellDelegate: AnyObject {
     func uncompleteTracker(id: UUID, at indexPath: IndexPath)
 }
 
-class TrackerCollectionViewCell: UICollectionViewCell {
+final class TrackerCollectionViewCell: UICollectionViewCell {
     // MARK: - UI Elements
 
     // Эмодзи трекера
-    let emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
         label.backgroundColor = UIColor.white.withAlphaComponent(0.3)
@@ -22,7 +22,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
 
     
     // Название трекера
-    let titleLabel: UILabel = {
+    private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .white
@@ -32,7 +32,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     }()
     
     // Цвет фона ячейки
-    let colorView: UIView = {
+    private lazy var colorView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 12
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -40,7 +40,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     }()
     
     // Количество дней
-    let daysLabel: UILabel = {
+    private lazy var daysLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textColor = .black
@@ -49,7 +49,7 @@ class TrackerCollectionViewCell: UICollectionViewCell {
     }()
     
     // Кнопка с плюсом
-    let addButton: UIButton = {
+    private lazy var addButton: UIButton = {
         let pointSize = UIImage.SymbolConfiguration(pointSize: 11)
         let image = UIImage(systemName: "plus", withConfiguration: pointSize)
         let button = UIButton()
@@ -62,13 +62,13 @@ class TrackerCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
-    private let plusImage: UIImage = {
+    private lazy var plusImage: UIImage = {
         let pointSize = UIImage.SymbolConfiguration(pointSize: 11)
         let image = UIImage(systemName: "plus", withConfiguration: pointSize) ?? UIImage()
         return image
     }()
     
-    private let completedImage = UIImage(named: "completed_image")
+    private lazy var completedImage = UIImage(named: "completed_image")
     
     weak var delegate: TrackerCellDelegate?
     var trackerID: UUID?

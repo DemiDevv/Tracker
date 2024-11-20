@@ -1,7 +1,7 @@
 import UIKit
 
-class TrackerHabbitViewCell: UICollectionViewCell {
-    let titleLabel: UILabel = {
+final class TrackerHabbitViewCell: UICollectionViewCell {
+    lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 32)
@@ -13,7 +13,7 @@ class TrackerHabbitViewCell: UICollectionViewCell {
     }()
     
     // Представление для цвета (с рамкой)
-    let colorView: UIView = {
+    lazy var colorView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 8 // Скругляем углы для рамки
         view.layer.masksToBounds = true
@@ -25,7 +25,7 @@ class TrackerHabbitViewCell: UICollectionViewCell {
     }()
     
     // Внутреннее представление (для отступа)
-    let innerColorView: UIView = {
+    lazy var innerColorView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = 8 // Радиус чуть меньше, чтобы вписываться
         view.layer.masksToBounds = true

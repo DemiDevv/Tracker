@@ -11,7 +11,7 @@ final class ScheduleViewController: UIViewController {
     let daysOfWeek = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
     
     // Таблица
-    private let tableView: UITableView = {
+    private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true  // Закругление углов таблицы
@@ -21,7 +21,7 @@ final class ScheduleViewController: UIViewController {
         return tableView
     }()
     
-    private let scheduleLabel: UILabel = {
+    private lazy var scheduleLabel: UILabel = {
         let scheduleLabel = UILabel()
         scheduleLabel.text = "Расписание"
         scheduleLabel.font = UIFont.systemFont(ofSize: 16)
@@ -30,7 +30,7 @@ final class ScheduleViewController: UIViewController {
         
     }()
     
-    private let doneButton: UIButton = {
+    private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
         button.backgroundColor = .blackDayYp
@@ -51,7 +51,7 @@ final class ScheduleViewController: UIViewController {
         setUpConstrains()
     }
     
-    func setUpConstrains() {
+     private func setUpConstrains() {
         tableView.register(SwitchTableViewCell.self, forCellReuseIdentifier: "SwitchCell")
         tableView.delegate = self
         tableView.dataSource = self

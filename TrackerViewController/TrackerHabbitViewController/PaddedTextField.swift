@@ -1,8 +1,8 @@
 import UIKit
 
-class PaddedTextField: UITextField {
+final class PaddedTextField: UITextField {
     
-    private let textPadding = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 41)
+    private lazy var textPadding = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 41)
 
     // Метод для отображения текста
     override func textRect(forBounds bounds: CGRect) -> CGRect {
