@@ -1,6 +1,6 @@
 import Foundation
 
-enum TrackerType {
+enum TrackerType: Codable {
     case habbit
     case event
 }
