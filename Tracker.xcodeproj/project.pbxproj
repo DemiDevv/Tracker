@@ -22,7 +22,7 @@
 		304E7A372C875A0E00F55F68 /* StatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A362C875A0E00F55F68 /* StatViewController.swift */; };
 		30863AAD2CF7718600987F29 /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 30863AAB2CF7718600987F29 /* TrackerModel.xcdatamodeld */; };
 		30863AAF2CF7788300987F29 /* DaysValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */; };
-		30863AB22CF7794200987F29 /* ColorTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB12CF7794200987F29 /* ColorTransformer.swift */; };
+		30863AB22CF7794200987F29 /* UIColorMarshalling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB12CF7794200987F29 /* UIColorMarshalling.swift */; };
 		30863AB42CF77C1000987F29 /* TrackersValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB32CF77C1000987F29 /* TrackersValueTransformer.swift */; };
 		30B13E722CA5517100386389 /* TrackerCreateViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B13E712CA5517100386389 /* TrackerCreateViewController.swift */; };
 		30D8F32C2CC7B0C900B2986D /* TrackerHabbitViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D8F32B2CC7B0C900B2986D /* TrackerHabbitViewCell.swift */; };
@@ -52,7 +52,7 @@
 		304E7A362C875A0E00F55F68 /* StatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatViewController.swift; sourceTree = "<group>"; };
 		30863AAC2CF7718600987F29 /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysValueTransformer.swift; sourceTree = "<group>"; };
-		30863AB12CF7794200987F29 /* ColorTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTransformer.swift; sourceTree = "<group>"; };
+		30863AB12CF7794200987F29 /* UIColorMarshalling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorMarshalling.swift; sourceTree = "<group>"; };
 		30863AB32CF77C1000987F29 /* TrackersValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersValueTransformer.swift; sourceTree = "<group>"; };
 		30B13E712CA5517100386389 /* TrackerCreateViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCreateViewController.swift; sourceTree = "<group>"; };
 		30D8F32B2CC7B0C900B2986D /* TrackerHabbitViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerHabbitViewCell.swift; sourceTree = "<group>"; };
@@ -90,9 +90,6 @@
 		304E7A0F2C8621B000F55F68 = {
 			isa = PBXGroup;
 			children = (
-				304E7A352C8759F700F55F68 /* StatViewController */,
-				304E7A322C8759CD00F55F68 /* TrackerViewController */,
-				304E7A2F2C87588500F55F68 /* TabBar */,
 				304E7A1A2C8621B000F55F68 /* Tracker */,
 				304E7A192C8621B000F55F68 /* Products */,
 			);
@@ -109,6 +106,9 @@
 		304E7A1A2C8621B000F55F68 /* Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				304E7A352C8759F700F55F68 /* StatViewController */,
+				304E7A322C8759CD00F55F68 /* TrackerViewController */,
+				304E7A2F2C87588500F55F68 /* TabBar */,
 				304E7A1B2C8621B000F55F68 /* AppDelegate.swift */,
 				304E7A1D2C8621B000F55F68 /* SceneDelegate.swift */,
 				304E7A242C8621B100F55F68 /* Assets.xcassets */,
@@ -153,7 +153,7 @@
 			isa = PBXGroup;
 			children = (
 				30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */,
-				30863AB12CF7794200987F29 /* ColorTransformer.swift */,
+				30863AB12CF7794200987F29 /* UIColorMarshalling.swift */,
 				30863AB32CF77C1000987F29 /* TrackersValueTransformer.swift */,
 			);
 			path = Transformators;
@@ -304,7 +304,7 @@
 				303EA4272CEE558D003B170C /* TrackerCategory.swift in Sources */,
 				30863AAD2CF7718600987F29 /* TrackerModel.xcdatamodeld in Sources */,
 				30D8F32C2CC7B0C900B2986D /* TrackerHabbitViewCell.swift in Sources */,
-				30863AB22CF7794200987F29 /* ColorTransformer.swift in Sources */,
+				30863AB22CF7794200987F29 /* UIColorMarshalling.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

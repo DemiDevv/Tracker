@@ -1,6 +1,13 @@
 import UIKit
 
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    private var optionsTableViewTopConstraint: NSLayoutConstraint!
+    private var selectedEmoji: String?
+    private var selectedColor: UIColor?
+    private var selectedSchedule = [Weekday]()
+    weak var delegate: ScheduleViewControllerDelegate?
+    
+    var onTrackerCreated: ((Tracker) -> Void)?
     
     // MARK: - UI Elements
     private lazy var habbitTitle: UILabel = {
@@ -140,14 +147,6 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
     
-    private var optionsTableViewTopConstraint: NSLayoutConstraint!
-    private var selectedEmoji: String?
-    private var selectedColor: UIColor?
-    private var selectedSchedule = [Weekday]()
-    weak var delegate: ScheduleViewControllerDelegate?
-    
-    var onTrackerCreated: ((Tracker) -> Void)?
-    
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
@@ -209,6 +208,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         
         NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+        
     }
 
     func updateCollectionViewHeights() {
