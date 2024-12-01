@@ -35,22 +35,32 @@ final class TrackerCategoryStore {
     func fetchAllCategories() throws -> [TrackerCategory] {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
         let categoryCoreDataList = try context.fetch(fetchRequest)
+        
         return categoryCoreDataList.compactMap { categoryCoreData in
-            guard let title = categoryCoreData.title,
-                  let trackerCoreDataList = categoryCoreData.trackers?.allObjects as? [TrackerCoreData] else { return nil }
-            let trackers = trackerCoreDataList.compactMap { trackerCoreData -> Tracker? in
-                guard let id = trackerCoreData.id,
-                      let title = trackerCoreData.title,
-                      let colorHex = trackerCoreData.color,
-                      let emoji = trackerCoreData.emoji,
-                      let scheduleData = trackerCoreData.schedule as? NSData,
-                      let schedule = DaysValueTransformer().reverseTransformedValue(scheduleData) as? [Weekday],
-                      let color = uiColorMarshalling.color(from: colorHex) else { return nil }
-                return Tracker(id: id, title: title, color: color, emoji: emoji, schedule: schedule, type: .habbit)
+            guard let title = categoryCoreData.title else { return nil }
+            
+            if let trackersSet = categoryCoreData.trackers as? NSSet {
+                let trackerCoreDataList = trackersSet.allObjects as? [TrackerCoreData] ?? []
+                
+                let trackers = trackerCoreDataList.compactMap { trackerCoreData -> Tracker? in
+                    guard let id = trackerCoreData.id,
+                          let title = trackerCoreData.title,
+                          let colorHex = trackerCoreData.color,
+                          let emoji = trackerCoreData.emoji,
+                          let scheduleData = trackerCoreData.schedule as? NSData,
+                          let schedule = DaysValueTransformer().reverseTransformedValue(scheduleData) as? [Weekday],
+                          let color = uiColorMarshalling.color(from: colorHex) else { return nil }
+                    
+                    return Tracker(id: id, title: title, color: color, emoji: emoji, schedule: schedule, type: .habbit)
+                }
+                
+                return TrackerCategory(title: title, trackers: trackers)
             }
-            return TrackerCategory(title: title, trackers: trackers)
+            
+            return nil
         }
     }
+
 
     func updateCategory(_ category: TrackerCategory) throws {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
