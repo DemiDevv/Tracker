@@ -14,7 +14,7 @@ final class UIColorMarshalling {
         )
     }
 
-    func color(from hex: String) -> UIColor {
+    func color(from hex: String) -> UIColor? {
         var rgbValue:UInt64 = 0
         Scanner(string: hex).scanHexInt64(&rgbValue)
         return UIColor(

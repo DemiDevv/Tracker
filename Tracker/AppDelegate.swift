@@ -11,7 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = TabBarController()
         window?.makeKeyAndVisible()
         DaysValueTransformer.register()
-        TrackersValueTransformer.register()
+        TrackerTypeValueTransformer.register()
         return true
     }
 

@@ -1,6 +1,6 @@
 import UIKit
 
-struct Tracker: Codable {
+struct Tracker {
     let id: UUID
     let title: String
     let color: UIColor
