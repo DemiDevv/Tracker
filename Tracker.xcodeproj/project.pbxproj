@@ -23,7 +23,7 @@
 		30863AAD2CF7718600987F29 /* TrackerModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 30863AAB2CF7718600987F29 /* TrackerModel.xcdatamodeld */; };
 		30863AAF2CF7788300987F29 /* DaysValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */; };
 		30863AB22CF7794200987F29 /* UIColorMarshalling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB12CF7794200987F29 /* UIColorMarshalling.swift */; };
-		30863AB42CF77C1000987F29 /* TrackersValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB32CF77C1000987F29 /* TrackersValueTransformer.swift */; };
+		30863AB42CF77C1000987F29 /* TrackerTypeValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB32CF77C1000987F29 /* TrackerTypeValueTransformer.swift */; };
 		30863ABA2CF9FC4700987F29 /* TrackerStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB92CF9FC4700987F29 /* TrackerStore.swift */; };
 		30863ABC2CF9FC5400987F29 /* TrackerCategoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863ABB2CF9FC5400987F29 /* TrackerCategoryStore.swift */; };
 		30863ABE2CF9FC5E00987F29 /* TrackerRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863ABD2CF9FC5E00987F29 /* TrackerRecordStore.swift */; };
@@ -56,7 +56,7 @@
 		30863AAC2CF7718600987F29 /* TrackerModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = TrackerModel.xcdatamodel; sourceTree = "<group>"; };
 		30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysValueTransformer.swift; sourceTree = "<group>"; };
 		30863AB12CF7794200987F29 /* UIColorMarshalling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorMarshalling.swift; sourceTree = "<group>"; };
-		30863AB32CF77C1000987F29 /* TrackersValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackersValueTransformer.swift; sourceTree = "<group>"; };
+		30863AB32CF77C1000987F29 /* TrackerTypeValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerTypeValueTransformer.swift; sourceTree = "<group>"; };
 		30863AB92CF9FC4700987F29 /* TrackerStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerStore.swift; sourceTree = "<group>"; };
 		30863ABB2CF9FC5400987F29 /* TrackerCategoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerCategoryStore.swift; sourceTree = "<group>"; };
 		30863ABD2CF9FC5E00987F29 /* TrackerRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerRecordStore.swift; sourceTree = "<group>"; };
@@ -161,7 +161,7 @@
 			children = (
 				30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */,
 				30863AB12CF7794200987F29 /* UIColorMarshalling.swift */,
-				30863AB32CF77C1000987F29 /* TrackersValueTransformer.swift */,
+				30863AB32CF77C1000987F29 /* TrackerTypeValueTransformer.swift */,
 			);
 			path = Transformators;
 			sourceTree = "<group>";
@@ -319,7 +319,7 @@
 				30863ABC2CF9FC5400987F29 /* TrackerCategoryStore.swift in Sources */,
 				304E7A372C875A0E00F55F68 /* StatViewController.swift in Sources */,
 				30F88C242CB6F07600A84469 /* TrackerHabbitViewController.swift in Sources */,
-				30863AB42CF77C1000987F29 /* TrackersValueTransformer.swift in Sources */,
+				30863AB42CF77C1000987F29 /* TrackerTypeValueTransformer.swift in Sources */,
 				304E7A1E2C8621B000F55F68 /* SceneDelegate.swift in Sources */,
 				303EA4272CEE558D003B170C /* TrackerCategory.swift in Sources */,
 				30863AAD2CF7718600987F29 /* TrackerModel.xcdatamodeld in Sources */,

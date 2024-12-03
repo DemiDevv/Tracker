@@ -14,14 +14,78 @@ final class TrackerRecordStore {
         self.context = context
     }
     
+    // Добавить новый трекер
     func addNewTrackerRecord(_ trackerRecord: TrackerRecord) throws {
-        let trackerRecordCoreData = TrackerRecordCoreData(context: context)
-        updateExistingTrackerRecord(trackerRecordCoreData, with: trackerRecord)
-        try context.save()
+        try performSync { context in
+            Result {
+                let trackerRecordCoreData = TrackerRecordCoreData(context: context)
+                updateExistingTrackerRecord(trackerRecordCoreData, with: trackerRecord)
+                try context.save()
+            }
+        }
     }
     
-    func updateExistingTrackerRecord(_ trackerRecordCorData: TrackerRecordCoreData, with record: TrackerRecord) {
-        trackerRecordCorData.date = record.date
-        trackerRecordCorData.trackerID = record.trackerID
+    // Обновить существующую запись
+    func updateExistingTrackerRecord(_ trackerRecordCoreData: TrackerRecordCoreData, with record: TrackerRecord) {
+        trackerRecordCoreData.date = record.date
+        trackerRecordCoreData.trackerID = record.trackerID
+    }
+
+    // Получить все записи трекеров
+    func fetchAllTrackerRecords() throws -> [TrackerRecord] {
+        try performSync { context in
+            Result {
+                let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+                let trackerRecordCoreDataList = try context.fetch(fetchRequest)
+                
+                return trackerRecordCoreDataList.compactMap { trackerRecordCoreData in
+                    guard let date = trackerRecordCoreData.date,
+                          let trackerID = trackerRecordCoreData.trackerID else { return nil }
+                    return TrackerRecord(trackerID: trackerID, date: date)
+                }
+            }
+        }
+    }
+
+    // Получить запись по ID трекера
+    func fetchTrackerRecord(by trackerID: UUID) throws -> TrackerRecord? {
+        try performSync { context in
+            Result {
+                let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "trackerID == %@", trackerID as CVarArg)
+                
+                guard let trackerRecordCoreData = try context.fetch(fetchRequest).first else {
+                    return nil
+                }
+
+                guard let date = trackerRecordCoreData.date,
+                      let trackerID = trackerRecordCoreData.trackerID else { return nil }
+
+                return TrackerRecord(trackerID: trackerID, date: date)
+            }
+        }
+    }
+
+    // Удалить запись по ID трекера
+    func deleteTrackerRecord(by trackerID: UUID) throws {
+        try performSync { context in
+            Result {
+                let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
+                fetchRequest.predicate = NSPredicate(format: "trackerID == %@", trackerID as CVarArg)
+
+                if let trackerRecordCoreData = try context.fetch(fetchRequest).first {
+                    context.delete(trackerRecordCoreData)
+                    try context.save()
+                }
+            }
+        }
+    }
+    
+    // Вспомогательная функция для выполнения синхронных операций с контекстом
+    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
+        let context = self.context
+        var result: Result<R, Error>!
+        context.performAndWait { result = action(context) }
+        return try result.get()
     }
 }
