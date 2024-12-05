@@ -105,11 +105,13 @@ final class TrackerViewController: UIViewController {
     private var filteredCategories: [TrackerCategory] = []
     var completedTrackers: [TrackerRecord] = []
     var currentDate: Date = Date()
+    private var trackerStore = TrackerStore()
 
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        trackerStore.delegate = self
         
         NotificationCenter.default.addObserver(self, selector: #selector(didReceiveNewTrackerNotification(_:)), name: .didCreateNewTracker, object: nil)
 
@@ -420,29 +422,35 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
         return CGSize(width: cellWidth, height: 120)
     }
 
-    // Размер заголовка секции
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: collectionView.bounds.width, height: 40) // Высота заголовка секции
+        return CGSize(width: collectionView.bounds.width, height: 40)
     }
     
-    // Отступы от краёв экрана для секции
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 16, bottom: 32, right: 16) // Установите нижний отступ для секции
+        return UIEdgeInsets(top: 0, left: 16, bottom: 32, right: 16)
     }
     
-    // Расстояние между строками
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 32 // Расстояние между строками (секциями)
+        return 32
     }
     
-    // Расстояние между ячейками в строке
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 9 // Расстояние между ячейками в строке
+        return 9
+    }
+}
+
+extension TrackerViewController: TrackerStoreDelegate {
+    func didUpdate(_ update: TrackerStoreUpdate) {
+        collectionView.performBatchUpdates {
+            let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
+            let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
+            
+            collectionView.insertItems(at: insertedIndexPaths)
+            collectionView.deleteItems(at: deletedIndexPaths)
+        }
     }
 }
 
 extension Notification.Name {
     static let didCreateNewTracker = Notification.Name("didCreateNewTracker")
 }
-
-

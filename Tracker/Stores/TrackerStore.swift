@@ -1,12 +1,24 @@
 import UIKit
 import CoreData
 
-final class TrackerStore {
+struct TrackerStoreUpdate {
+    let insertedIndexes: IndexSet
+    let deletedIndexes: IndexSet
+}
+
+protocol TrackerStoreDelegate: AnyObject {
+    func didUpdate(_ update: TrackerStoreUpdate)
+}
+
+final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
     private let uiColorMarshalling = UIColorMarshalling()
     private let daysValueTransformer = DaysValueTransformer()
     private let trackerTypeValueTransformer = TrackerTypeValueTransformer()
-
+    private var insertedIndexes: IndexSet?
+    private var deletedIndexes: IndexSet?
+    weak var delegate: TrackerStoreDelegate?
+    
     enum TrackerStoreError: Error {
         case trackerNotFound
     }
@@ -15,23 +27,28 @@ final class TrackerStore {
         self.context = context
     }
     
-    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
-        var result: Result<R, Error>!
-        context.performAndWait {
-            result = action(context)
-        }
-        return try result.get()
+    private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCoreData> = {
+
+        let fetchRequest = TrackerCoreData.fetchRequest()
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: false)]
+        
+        let fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest,
+                                                                  managedObjectContext: context,
+                                                                  sectionNameKeyPath: nil,
+                                                                  cacheName: nil)
+        fetchedResultsController.delegate = self
+        try? fetchedResultsController.performFetch()
+        return fetchedResultsController
+    }()
+
+    func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategoryCoreData) throws {
+        let trackerCoreData = TrackerCoreData(context: context)
+        updateExistingTracker(trackerCoreData, with: tracker)
+        trackerCoreData.category = category
+        category.addToTracker(trackerCoreData)
+        try context.save()
     }
 
-    func addNewTracker(_ tracker: Tracker) throws {
-        try performSync { context in
-            Result {
-                let trackerCoreData = TrackerCoreData(context: context)
-                updateExistingTracker(trackerCoreData, with: tracker)
-                try context.save()
-            }
-        }
-    }
 
     func updateExistingTracker(_ trackerCoreData: TrackerCoreData, with tracker: Tracker) {
         trackerCoreData.id = tracker.id
@@ -43,57 +60,41 @@ final class TrackerStore {
     }
 
     func fetchAllTrackers() throws -> [Tracker] {
-        try performSync { context in
-            Result {
-                let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-                let trackerCoreDataList = try context.fetch(fetchRequest)
-                return trackerCoreDataList.compactMap { trackerCoreData in
-                    self.mapToTracker(trackerCoreData)
-                }
-            }
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        let trackerCoreDataList = try context.fetch(fetchRequest)
+        return trackerCoreDataList.compactMap { trackerCoreData in
+            self.mapToTracker(trackerCoreData)
         }
     }
-
+    
     func fetchTracker(by id: UUID) throws -> Tracker? {
-        try performSync { context in
-            Result {
-                let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-                fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-                guard let trackerCoreData = try context.fetch(fetchRequest).first else {
-                    throw TrackerStoreError.trackerNotFound
-                }
-                return self.mapToTracker(trackerCoreData)
-            }
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        guard let trackerCoreData = try context.fetch(fetchRequest).first else {
+            throw TrackerStoreError.trackerNotFound
         }
+        return self.mapToTracker(trackerCoreData)
     }
 
     func updateTracker(_ tracker: Tracker) throws {
-        try performSync { context in
-            Result {
-                let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-                fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
-                if let trackerCoreData = try context.fetch(fetchRequest).first {
-                    updateExistingTracker(trackerCoreData, with: tracker)
-                    try context.save()
-                } else {
-                    throw TrackerStoreError.trackerNotFound
-                }
-            }
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
+        if let trackerCoreData = try context.fetch(fetchRequest).first {
+            updateExistingTracker(trackerCoreData, with: tracker)
+            try context.save()
+        } else {
+            throw TrackerStoreError.trackerNotFound
         }
     }
 
     func deleteTracker(by id: UUID) throws {
-        try performSync { context in
-            Result {
-                let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-                fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-                if let trackerCoreData = try context.fetch(fetchRequest).first {
-                    context.delete(trackerCoreData)
-                    try context.save()
-                } else {
-                    throw TrackerStoreError.trackerNotFound
-                }
-            }
+        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        if let trackerCoreData = try context.fetch(fetchRequest).first {
+            context.delete(trackerCoreData)
+            try context.save()
+        } else {
+            throw TrackerStoreError.trackerNotFound
         }
     }
 
@@ -110,5 +111,38 @@ final class TrackerStore {
         else { return nil }
         
         return Tracker(id: id, title: title, color: color, emoji: emoji, schedule: schedule, type: type)
+    }
+}
+
+extension TrackerStore: NSFetchedResultsControllerDelegate {
+    func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        insertedIndexes = IndexSet()
+        deletedIndexes = IndexSet()
+    }
+
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        delegate?.didUpdate(TrackerStoreUpdate(
+                insertedIndexes: insertedIndexes!,
+                deletedIndexes: deletedIndexes!
+            )
+        )
+        insertedIndexes = nil
+        deletedIndexes = nil
+    }
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        
+        switch type {
+        case .delete:
+            if let indexPath = indexPath {
+                deletedIndexes?.insert(indexPath.item)
+            }
+        case .insert:
+            if let indexPath = newIndexPath {
+                insertedIndexes?.insert(indexPath.item)
+            }
+        default:
+            break
+        }
     }
 }

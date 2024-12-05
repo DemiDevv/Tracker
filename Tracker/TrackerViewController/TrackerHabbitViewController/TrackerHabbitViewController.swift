@@ -1,11 +1,16 @@
 import UIKit
 
+protocol TrackerHabbitViewControllerDelegate: AnyObject {
+    func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategoryCoreData)
+}
+
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private var optionsTableViewTopConstraint: NSLayoutConstraint!
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var selectedSchedule = [Weekday]()
     weak var delegate: ScheduleViewControllerDelegate?
+    weak var delegate2: TrackerHabbitViewControllerDelegate?
     
     var onTrackerCreated: ((Tracker) -> Void)?
     
@@ -199,17 +204,37 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     @objc private func didTapCreateButton() {
         guard let title = titleTextField.text, !title.isEmpty,
               let color = selectedColor,
-              let emoji = selectedEmoji, !selectedSchedule.isEmpty
-        else {
-            return
+              let emoji = selectedEmoji,
+              !selectedSchedule.isEmpty else { return }
+
+        let newTracker = Tracker(
+            id: UUID(),
+            title: title,
+            color: color,
+            emoji: emoji,
+            schedule: selectedSchedule,
+            type: .habbit
+        )
+
+        let categoryTitle = "Новая категория"
+        do {
+            let trackerCategoryStore = TrackerCategoryStore()
+            
+            do {
+                try trackerCategoryStore.addTracker(newTracker, toCategoryWithTitle: categoryTitle)
+            } catch TrackerCategoryStore.TrackerCategoryStoreError.categoryNotFound {
+                let newCategory = TrackerCategory(title: categoryTitle, trackers: [newTracker])
+                try trackerCategoryStore.addCategory(newCategory)
+            }
+
+            NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
+            presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+            
+        } catch {
+            print("Ошибка при добавлении трекера: \(error.localizedDescription)")
         }
-        
-        let newTracker = Tracker(id: UUID(), title: title, color: color, emoji: emoji, schedule: selectedSchedule, type: .habbit)
-        
-        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
-        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
-        
     }
+
 
     func updateCollectionViewHeights() {
         let itemHeight: CGFloat = 52
