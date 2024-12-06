@@ -49,55 +49,6 @@ final class TrackerCategoryStore {
         }
     }
 
-
-    // Добавить категорию и связанные с ней трекеры
-    func addCategory(_ category: TrackerCategory) throws {
-        let categoryCoreData = TrackerCategoryCoreData(context: context)
-        categoryCoreData.title = category.title
-        
-        categoryCoreData.trackers = NSSet()
-
-        for tracker in category.trackers {
-            let trackerCoreData = TrackerCoreData(context: context)
-            trackerCoreData.id = tracker.id
-            trackerCoreData.title = tracker.title
-            trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
-            trackerCoreData.emoji = tracker.emoji
-            trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSData
-            trackerCoreData.type = trackerTyperValueTransformer.transformedValue(tracker.type) as? String
-
-            trackerCoreData.category = categoryCoreData
-            categoryCoreData.addToTracker(trackerCoreData)
-        }
-
-        try context.save()
-    }
-
-    // Обновить категорию и её трекеры
-    func updateCategory(_ category: TrackerCategory) throws {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "title == %@", category.title)
-
-        guard let categoryCoreData = try context.fetch(fetchRequest).first else {
-            throw TrackerCategoryStoreError.categoryNotFound
-        }
-        categoryCoreData.trackers = nil
-
-        // Добавляем новые трекеры
-        for tracker in category.trackers {
-            let trackerCoreData = TrackerCoreData(context: context)
-            trackerCoreData.id = tracker.id
-            trackerCoreData.title = tracker.title
-            trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
-            trackerCoreData.emoji = tracker.emoji
-            trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSData
-            trackerCoreData.type = trackerTyperValueTransformer.transformedValue(tracker.type) as? String
-            trackerCoreData.category = categoryCoreData
-        }
-
-        try context.save()
-    }
-
     // Удалить категорию по названию
     func deleteCategory(byTitle title: String) throws {
         let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
@@ -125,30 +76,8 @@ final class TrackerCategoryStore {
         trackerCoreData.title = tracker.title
         trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
         trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSData
+        trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSArray
         trackerCoreData.type = trackerTyperValueTransformer.transformedValue(tracker.type) as? String
-        trackerCoreData.category = categoryCoreData
-
-        try context.save()
-    }
-
-    // Добавить категорию к существующему трекеру
-    func addCategory(_ categoryTitle: String, toTrackerWithId trackerId: UUID) throws {
-        let trackerFetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        trackerFetchRequest.predicate = NSPredicate(format: "id == %@", trackerId as CVarArg)
-
-        guard let trackerCoreData = try context.fetch(trackerFetchRequest).first else {
-            throw TrackerCategoryStoreError.trackerNotFound
-        }
-
-        let categoryFetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        categoryFetchRequest.predicate = NSPredicate(format: "title == %@", categoryTitle)
-
-        guard let categoryCoreData = try context.fetch(categoryFetchRequest).first else {
-            throw TrackerCategoryStoreError.categoryNotFound
-        }
-
-        // Устанавливаем категорию для трекера
         trackerCoreData.category = categoryCoreData
 
         try context.save()

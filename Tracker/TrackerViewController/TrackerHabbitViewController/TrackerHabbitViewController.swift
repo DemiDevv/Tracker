@@ -218,7 +218,12 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             type: .habbit
         )
         let categoryTitle = "Новая категория"
+        if delegate2 == nil {
+            print("⚠️ Делегат delegate2 не установлен")
+        }
+
         delegate2?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        print("Создан новый трекер: \(newTracker)")
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 

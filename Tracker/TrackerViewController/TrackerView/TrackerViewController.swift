@@ -108,13 +108,17 @@ final class TrackerViewController: UIViewController {
     private let trackerCategoryStore =  TrackerCategoryStore()
     private var trackerStore = TrackerStore()
     private var trackerRecordStore = TrackerRecordStore()
-
+    private var trackerHabbitViewController: TrackerHabbitViewController?
+    weak var delegate2: TrackerHabbitViewControllerDelegate?
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         trackerStore.delegate = self
-
+        let viewController = TrackerHabbitViewController()
+        viewController.delegate2 = self
+        
         setupTrackerView()
         updateUI()
         setupCollectionView()
@@ -213,24 +217,32 @@ final class TrackerViewController: UIViewController {
         let calendar = Calendar.current
         let filterWeekday = calendar.component(.weekday, from: datePicker.date)
         let filterText = (trackerSearchBar.text ?? "").lowercased()
-        print("Search filter: \(filterText)")
-
+        print("Search filter: \(filterText), Filter weekday: \(filterWeekday)")
+        
+        // Получение всех категорий
         let allCategories = trackerCategoryStore.fetchAllCategories()
-
+        print("Fetched categories count: \(allCategories.count)")
+        
+        // Фильтрация категорий
         filteredCategories = allCategories.compactMap { category in
+            print("Processing category: \(category.title)")
+            
+            // Фильтрация трекеров внутри категории
             let trackers = category.trackers.filter { tracker in
-                let textCondition = filterText.isEmpty ||
-                    tracker.title.lowercased().contains(filterText)
-                print("Checking tracker title: \(tracker.title), condition: \(textCondition)")
-
+                let textCondition = filterText.isEmpty || tracker.title.lowercased().contains(filterText)
+                print("Checking tracker title: \(tracker.title), Text condition: \(textCondition)")
+                
                 let dateCondition = tracker.schedule.contains { weekDay in
-                    print("Checking weekday: \(weekDay.rawValue), filter weekday: \(filterWeekday)")
+                    print("Checking weekday: \(weekDay.rawValue), Filter weekday: \(filterWeekday)")
                     return weekDay.rawValue == filterWeekday
                 }
+                print("Tracker \(tracker.title), Date condition: \(dateCondition)")
+                
                 return textCondition && dateCondition
             }
             
             if trackers.isEmpty {
+                print("No trackers match in category: \(category.title)")
                 return nil
             }
             
@@ -239,9 +251,13 @@ final class TrackerViewController: UIViewController {
                 trackers: trackers
             )
         }
+        
+        // Вывод отфильтрованных категорий
+        print("Filtered categories count: \(filteredCategories.count)")
         collectionView.reloadData()
         reloadPlaceholder()
     }
+
     
     private func reloadPlaceholder() {
         let isEmpty = filteredCategories.isEmpty
@@ -270,9 +286,7 @@ final class TrackerViewController: UIViewController {
 extension TrackerViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        
         reloadFiltredCategories()
-        
         return true
     }
     
@@ -427,22 +441,32 @@ extension TrackerViewController: TrackerStoreDelegate {
         collectionView.performBatchUpdates {
             let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
             let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
-            
+
+            // Вставляем или удаляем элементы
             collectionView.insertItems(at: insertedIndexPaths)
             collectionView.deleteItems(at: deletedIndexPaths)
+        } completion: { _ in
+            // После выполнения обновлений, перезагружаем данные
+            self.collectionView.reloadData()
         }
     }
 }
 
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker) {
-        guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else { return }
+        print("🛠 Метод didTapCreateButton вызван с categoryTitle: \(categoryTitle)")
+        guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
+            print("⚠️ Категория не найдена: \(categoryTitle)")
+            return
+        }
+        
         dismiss(animated: true)
         
         do {
             try trackerStore.addNewTracker(trackerToAdd, toCategory: categories[categoryIndex])
+            reloadFiltredCategories()
         } catch {
-            print("❌ Failed to add new tracker: \(error.localizedDescription)")
+            print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }
     }
     

@@ -7,11 +7,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        DaysValueTransformer.register()
+        TrackerTypeValueTransformer.register()
+
         window = UIWindow()
         window?.rootViewController = TabBarController()
         window?.makeKeyAndVisible()
-        DaysValueTransformer.register()
-        TrackerTypeValueTransformer.register()
         return true
     }
 

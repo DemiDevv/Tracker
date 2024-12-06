@@ -66,7 +66,9 @@ extension TrackerStore: TrackerStoreProtocol {
     }
 
     func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategory) throws {
+        print("Метод addNewTracker вызван")
         guard let categoryCoreData = trackerCategoryStore.getCategoryByTitle(category.title) else {
+            print("Категория с названием \(category.title) не найдена.")
             return
         }
         let trackerCoreData = TrackerCoreData(context: context)
@@ -74,6 +76,9 @@ extension TrackerStore: TrackerStoreProtocol {
         trackerCoreData.category = categoryCoreData
         do {
             try context.save()
+            print("Трекер успешно добавлен в базу данных")
+            try fetchedResultsController.performFetch()
+                print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
         } catch {
             print("Ошибка при сохранении контекста: \(error.localizedDescription)")
         }
@@ -85,7 +90,7 @@ extension TrackerStore: TrackerStoreProtocol {
         trackerCoreData.title = tracker.title
         trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
         trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSData
+        trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSArray
         trackerCoreData.type = trackerTypeValueTransformer.transformedValue(trackerCoreData.type) as? String
     }
     
@@ -105,14 +110,6 @@ extension TrackerStore: TrackerStoreProtocol {
         } catch {
             print("❌ Failed to fetch tracker by UUID: \(error)")
             return nil
-        }
-    }
-
-    func fetchAllTrackers() throws -> [Tracker] {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        let trackerCoreDataList = try context.fetch(fetchRequest)
-        return trackerCoreDataList.compactMap { trackerCoreData in
-            self.mapToTracker(trackerCoreData)
         }
     }
 
@@ -136,21 +133,6 @@ extension TrackerStore: TrackerStoreProtocol {
         } else {
             throw TrackerStoreError.trackerNotFound
         }
-    }
-
-    private func mapToTracker(_ trackerCoreData: TrackerCoreData) -> Tracker? {
-        guard
-            let id = trackerCoreData.id,
-            let title = trackerCoreData.title,
-            let colorHex = trackerCoreData.color,
-            let emoji = trackerCoreData.emoji,
-            let scheduleData = trackerCoreData.schedule as? NSData,
-            let schedule = daysValueTransformer.reverseTransformedValue(scheduleData) as? [Weekday],
-            let color = uiColorMarshalling.color(from: colorHex),
-            let type = trackerTypeValueTransformer.reverseTransformedValue(trackerCoreData.type) as? TrackerType
-        else { return nil }
-        
-        return Tracker(id: id, title: title, color: color, emoji: emoji, schedule: schedule, type: type)
     }
 }
 
