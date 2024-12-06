@@ -1,7 +1,8 @@
 import UIKit
 
 protocol TrackerHabbitViewControllerDelegate: AnyObject {
-    func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategoryCoreData)
+    func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker)
+    func didTapCancelButton()
 }
 
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
@@ -128,7 +129,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         button.layer.borderColor = UIColor.systemRed.cgColor
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(tapCancelButton), for: .touchUpInside)
         return button
     }()
 
@@ -197,8 +198,9 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         }
     }
     
-    @objc private func didTapCancelButton() {
-        presentingViewController?.dismiss(animated: true, completion: nil)
+    @objc private func tapCancelButton() {
+        dismiss(animated: true)
+        delegate2?.didTapCancelButton()
     }
     
     @objc private func didTapCreateButton() {
@@ -215,24 +217,9 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             schedule: selectedSchedule,
             type: .habbit
         )
-
         let categoryTitle = "Новая категория"
-        do {
-            let trackerCategoryStore = TrackerCategoryStore()
-            
-            do {
-                try trackerCategoryStore.addTracker(newTracker, toCategoryWithTitle: categoryTitle)
-            } catch TrackerCategoryStore.TrackerCategoryStoreError.categoryNotFound {
-                let newCategory = TrackerCategory(title: categoryTitle, trackers: [newTracker])
-                try trackerCategoryStore.addCategory(newCategory)
-            }
-
-            NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
-            presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
-            
-        } catch {
-            print("Ошибка при добавлении трекера: \(error.localizedDescription)")
-        }
+        delegate2?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
 

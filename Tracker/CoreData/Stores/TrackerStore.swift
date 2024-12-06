@@ -10,8 +10,18 @@ protocol TrackerStoreDelegate: AnyObject {
     func didUpdate(_ update: TrackerStoreUpdate)
 }
 
+protocol TrackerStoreProtocol {
+    var numberOfTrackers: Int { get }
+    var numberOfSections: Int { get }
+    func numberOfRowsInSection(_ section: Int) -> Int
+    func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategory) throws
+    func updateExistingTracker(_ trackerCoreData: TrackerCoreData, with tracker: Tracker)
+    func getTrackerCoreData(by id: UUID) -> TrackerCoreData?
+}
+
 final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
+    private let trackerCategoryStore = TrackerCategoryStore()
     private let uiColorMarshalling = UIColorMarshalling()
     private let daysValueTransformer = DaysValueTransformer()
     private let trackerTypeValueTransformer = TrackerTypeValueTransformer()
@@ -28,7 +38,7 @@ final class TrackerStore: NSObject {
     }
     
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCoreData> = {
-
+        
         let fetchRequest = TrackerCoreData.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "title", ascending: false)]
         
@@ -40,13 +50,33 @@ final class TrackerStore: NSObject {
         try? fetchedResultsController.performFetch()
         return fetchedResultsController
     }()
+}
+    
+extension TrackerStore: TrackerStoreProtocol {
+    var numberOfTrackers: Int {
+        fetchedResultsController.fetchedObjects?.count ?? 0
+    }
+    
+    var numberOfSections: Int {
+        fetchedResultsController.sections?.count ?? 0
+    }
+    
+    func numberOfRowsInSection(_ section: Int) -> Int {
+        fetchedResultsController.sections?[section].numberOfObjects ?? 0
+    }
 
-    func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategoryCoreData) throws {
+    func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategory) throws {
+        guard let categoryCoreData = trackerCategoryStore.getCategoryByTitle(category.title) else {
+            return
+        }
         let trackerCoreData = TrackerCoreData(context: context)
         updateExistingTracker(trackerCoreData, with: tracker)
-        trackerCoreData.category = category
-        category.addToTracker(trackerCoreData)
-        try context.save()
+        trackerCoreData.category = categoryCoreData
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при сохранении контекста: \(error.localizedDescription)")
+        }
     }
 
 
@@ -58,6 +88,25 @@ final class TrackerStore: NSObject {
         trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSData
         trackerCoreData.type = trackerTypeValueTransformer.transformedValue(trackerCoreData.type) as? String
     }
+    
+    func getTrackerCoreData(by id: UUID) -> TrackerCoreData? {
+        fetchedResultsController.fetchRequest.predicate = NSPredicate(
+            format: "id == %@", id as CVarArg
+        )
+        
+        do {
+            try fetchedResultsController.performFetch()
+            guard let tracker = fetchedResultsController.fetchedObjects?.first else {
+                throw StoreErrors.fetchTrackerError
+            }
+            
+            fetchedResultsController.fetchRequest.predicate = nil
+            return tracker
+        } catch {
+            print("❌ Failed to fetch tracker by UUID: \(error)")
+            return nil
+        }
+    }
 
     func fetchAllTrackers() throws -> [Tracker] {
         let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
@@ -65,15 +114,6 @@ final class TrackerStore: NSObject {
         return trackerCoreDataList.compactMap { trackerCoreData in
             self.mapToTracker(trackerCoreData)
         }
-    }
-    
-    func fetchTracker(by id: UUID) throws -> Tracker? {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        guard let trackerCoreData = try context.fetch(fetchRequest).first else {
-            throw TrackerStoreError.trackerNotFound
-        }
-        return self.mapToTracker(trackerCoreData)
     }
 
     func updateTracker(_ tracker: Tracker) throws {

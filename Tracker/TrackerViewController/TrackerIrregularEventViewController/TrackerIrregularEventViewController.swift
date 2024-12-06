@@ -216,8 +216,6 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         }
         
         let newTracker = Tracker(id: UUID(), title: title, color: color, emoji: emoji, schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday], type: .event)
-
-        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
         
         print("Создаю трекер с title: \(title), emoji: \("😀"), schedule: \(newTracker.schedule)")
 

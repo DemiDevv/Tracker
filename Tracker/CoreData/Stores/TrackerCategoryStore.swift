@@ -15,13 +15,46 @@ final class TrackerCategoryStore {
     init(context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext) {
         self.context = context
     }
+    
+    func getCategoryByTitle(_ title: String) -> TrackerCategoryCoreData? {
+        let request = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+        request.predicate = NSPredicate(
+            format: "%K == %@",
+            #keyPath(TrackerCategoryCoreData.title),
+            title
+        )
+        request.fetchLimit = 1
+        
+        do {
+            let category = try context.fetch(request)
+            return category.first
+        } catch {
+            print("Failed to find category by title: \(error)")
+            return nil
+        }
+    }
+    
+    func fetchAllCategories() -> [TrackerCategory] {
+        let fetchRequest = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
+        do {
+            let categoriesCoreDataArray = try context.fetch(fetchRequest)
+            let categories = categoriesCoreDataArray
+                .compactMap { categoriesCoreData -> TrackerCategory? in
+                    decodingCategory(from: categoriesCoreData)
+                }
+            return categories
+        } catch {
+            print("❌ Failed to fetch categories: \(error)")
+            return []
+        }
+    }
+
 
     // Добавить категорию и связанные с ней трекеры
     func addCategory(_ category: TrackerCategory) throws {
         let categoryCoreData = TrackerCategoryCoreData(context: context)
         categoryCoreData.title = category.title
         
-        // Инициализируем пустое множество трекеров для связи
         categoryCoreData.trackers = NSSet()
 
         for tracker in category.trackers {
@@ -33,37 +66,11 @@ final class TrackerCategoryStore {
             trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSData
             trackerCoreData.type = trackerTyperValueTransformer.transformedValue(tracker.type) as? String
 
-            // Устанавливаем категорию для трекера
             trackerCoreData.category = categoryCoreData
-
             categoryCoreData.addToTracker(trackerCoreData)
         }
 
         try context.save()
-    }
-
-
-    // Получить все категории с трекерами
-    func fetchAllCategories() throws -> [TrackerCategory] {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        let categoryCoreDataList = try context.fetch(fetchRequest)
-
-        return categoryCoreDataList.compactMap { categoryCoreData in
-            guard let title = categoryCoreData.title else { return nil }
-
-            let trackers = (categoryCoreData.trackers as? Set<TrackerCoreData>)?.compactMap { trackerCoreData -> Tracker? in
-                guard let id = trackerCoreData.id,
-                      let title = trackerCoreData.title,
-                      let colorHex = trackerCoreData.color,
-                      let emoji = trackerCoreData.emoji,
-                      let scheduleData = trackerCoreData.schedule as? NSData,
-                      let schedule = daysValueTransformer.reverseTransformedValue(scheduleData) as? [Weekday],
-                      let color = uiColorMarshalling.color(from: colorHex) else { return nil }
-                return Tracker(id: id, title: title, color: color, emoji: emoji, schedule: schedule, type: .habbit)
-            } ?? []
-
-            return TrackerCategory(title: title, trackers: trackers)
-        }
     }
 
     // Обновить категорию и её трекеры
@@ -145,5 +152,22 @@ final class TrackerCategoryStore {
         trackerCoreData.category = categoryCoreData
 
         try context.save()
+    }
+}
+
+extension TrackerCategoryStore {
+    private func decodingCategory(from trackerCategoryCoreData: TrackerCategoryCoreData) -> TrackerCategory? {
+        guard
+            let title = trackerCategoryCoreData.title,
+            let trackerCoreDataSet = trackerCategoryCoreData.trackers as? Set<TrackerCoreData>
+        else {
+            return nil
+        }
+        
+        let trackers = trackerCoreDataSet.compactMap { trackerCoreData -> Tracker? in
+            return Tracker(from: trackerCoreData)
+        }
+        
+        return TrackerCategory(title: title, trackers: trackers)
     }
 }
