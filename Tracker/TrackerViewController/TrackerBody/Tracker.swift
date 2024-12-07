@@ -1,6 +1,6 @@
 import UIKit
 
-struct Tracker {
+struct Tracker: Hashable {
     let id: UUID
     let title: String
     let color: UIColor

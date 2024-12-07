@@ -16,6 +16,22 @@ final class TrackerCategoryStore {
         self.context = context
     }
     
+    func performContextOperation(_ operation: (NSManagedObjectContext) -> Void) {
+        operation(context)
+    }
+    
+    func createCategory(with category: TrackerCategory) {
+        let categoryEntity = TrackerCategoryCoreData(context: context)
+        categoryEntity.title = category.title
+        categoryEntity.trackers = NSSet()
+
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при создании категории")
+        }
+    }
+    
     func getCategoryByTitle(_ title: String) -> TrackerCategoryCoreData? {
         let request = NSFetchRequest<TrackerCategoryCoreData>(entityName: "TrackerCategoryCoreData")
         request.predicate = NSPredicate(

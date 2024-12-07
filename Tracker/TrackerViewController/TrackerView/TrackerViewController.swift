@@ -103,12 +103,16 @@ final class TrackerViewController: UIViewController {
     ]
 
     private var filteredCategories: [TrackerCategory] = []
-    var completedTrackers: [TrackerRecord] = []
+    var completedTrackers: Set<TrackerRecord> = []
     var currentDate: Date = Date()
     private let trackerCategoryStore =  TrackerCategoryStore()
     private var trackerStore = TrackerStore()
     private var trackerRecordStore = TrackerRecordStore()
-    private var trackerHabbitViewController: TrackerHabbitViewController?
+    lazy var trackerHabbitViewController: TrackerHabbitViewController = {
+        let viewController = TrackerHabbitViewController()
+        viewController.delegate2 = self
+        return viewController
+    }()
     weak var delegate2: TrackerHabbitViewControllerDelegate?
     
     // MARK: - Lifecycle
@@ -116,12 +120,21 @@ final class TrackerViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         trackerStore.delegate = self
-        let viewController = TrackerHabbitViewController()
-        viewController.delegate2 = self
         
         setupTrackerView()
         updateUI()
         setupCollectionView()
+        
+        getAllCategories()
+        
+        // TODO: Mock Data
+        if categories.isEmpty {
+            print("Load Mock Data")
+            trackerCategoryStore.createCategory(with: TrackerCategory(title: "Новая категория", trackers: []))
+            getAllCategories()
+        }
+        
+        getCompletedTrackers()
     }
     
     // MARK: - Setup UI
@@ -183,7 +196,17 @@ final class TrackerViewController: UIViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
+    // MARK: getAllCategories
+    private func getAllCategories() {
+        categories = trackerCategoryStore.fetchAllCategories()
+        print("categories", categories)
+    }
     
+    // MARK: getCompletedTrackers
+    private func getCompletedTrackers() {
+        completedTrackers = Set(trackerRecordStore.fetchAllRecords())
+        print("completedTrackers", completedTrackers)
+    }
     // MARK: - UI Update Logic
     private func updateUI() {
         collectionView.reloadData()
@@ -197,6 +220,7 @@ final class TrackerViewController: UIViewController {
 
     @objc private func addTrackerButtonTapped() {
         let trackerCreateVC = TrackerCreateViewController()
+        trackerCreateVC.trackerViewController = self
         if let navigationController = self.navigationController {
             navigationController.pushViewController(trackerCreateVC, animated: true)
         } else {
