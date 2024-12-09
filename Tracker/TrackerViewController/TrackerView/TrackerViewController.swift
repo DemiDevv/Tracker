@@ -89,19 +89,19 @@ final class TrackerViewController: UIViewController {
     
     // MARK: - Data
     
-    var categories: [TrackerCategory] = [
-        TrackerCategory(title: "Обязательно", trackers: [
-            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🍔", schedule: [.monday], type: .habbit),
-            Tracker(id: UUID(), title: "Попить воду", color: .colorSelection2, emoji: "😺", schedule: [.monday], type: .habbit),
-            Tracker(id: UUID(), title: "Поспать", color: .colorSelection5, emoji: "🌸", schedule: [.monday], type: .habbit),
-            
-            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection8, emoji: "❤️", schedule: [.tuesday], type: .habbit),
-        ]),
-        TrackerCategory(title: "Невероятно", trackers: [
-            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection12, emoji: "🐶", schedule: [.monday, .wednesday, .tuesday], type: .habbit)
-        ])
-    ]
-
+//    var categories: [TrackerCategory] = [
+//        TrackerCategory(title: "Обязательно", trackers: [
+//            Tracker(id: UUID(), title: "Поесть курицу", color: .colorSelection1, emoji: "🍔", schedule: [.monday], type: .habbit),
+//            Tracker(id: UUID(), title: "Попить воду", color: .colorSelection2, emoji: "😺", schedule: [.monday], type: .habbit),
+//            Tracker(id: UUID(), title: "Поспать", color: .colorSelection5, emoji: "🌸", schedule: [.monday], type: .habbit),
+//            
+//            Tracker(id: UUID(), title: "Не забыть сьездить на пары", color: .colorSelection8, emoji: "❤️", schedule: [.tuesday], type: .habbit),
+//        ]),
+//        TrackerCategory(title: "Невероятно", trackers: [
+//            Tracker(id: UUID(), title: "Поцеловать собаку и кота перед выходом", color: .colorSelection12, emoji: "🐶", schedule: [.monday, .wednesday, .tuesday], type: .habbit)
+//        ])
+//    ]
+    var categories: [TrackerCategory] = []
     private var filteredCategories: [TrackerCategory] = []
     var completedTrackers: Set<TrackerRecord> = []
     var currentDate: Date = Date()
@@ -130,7 +130,7 @@ final class TrackerViewController: UIViewController {
         // TODO: Mock Data
         if categories.isEmpty {
             print("Load Mock Data")
-            trackerCategoryStore.createCategory(with: TrackerCategory(title: "Новая категория", trackers: []))
+            trackerCategoryStore.createCategory(with: TrackerCategory(title: "Важное", trackers: []))
             getAllCategories()
         }
         
@@ -241,47 +241,34 @@ final class TrackerViewController: UIViewController {
         let calendar = Calendar.current
         let filterWeekday = calendar.component(.weekday, from: datePicker.date)
         let filterText = (trackerSearchBar.text ?? "").lowercased()
-        print("Search filter: \(filterText), Filter weekday: \(filterWeekday)")
+        print("Search filter: \(filterText)")
         
-        // Получение всех категорий
-        let allCategories = trackerCategoryStore.fetchAllCategories()
-        print("Fetched categories count: \(allCategories.count)")
-        
-        // Фильтрация категорий
-        filteredCategories = allCategories.compactMap { category in
-            print("Processing category: \(category.title)")
-            
-            // Фильтрация трекеров внутри категории
+        filteredCategories = categories.compactMap { category in
             let trackers = category.trackers.filter { tracker in
-                let textCondition = filterText.isEmpty || tracker.title.lowercased().contains(filterText)
-                print("Checking tracker title: \(tracker.title), Text condition: \(textCondition)")
-                
+                let textCondition = filterText.isEmpty ||
+                    tracker.title.lowercased().contains(filterText)
+                print("Checking tracker title: \(tracker.title), condition: \(textCondition)")
+
                 let dateCondition = tracker.schedule.contains { weekDay in
-                    print("Checking weekday: \(weekDay.rawValue), Filter weekday: \(filterWeekday)")
+                    print("Checking weekday: \(weekDay.rawValue), filter weekday: \(filterWeekday)")
                     return weekDay.rawValue == filterWeekday
                 }
-                print("Tracker \(tracker.title), Date condition: \(dateCondition)")
-                
                 return textCondition && dateCondition
             }
             
             if trackers.isEmpty {
-                print("No trackers match in category: \(category.title)")
                 return nil
             }
             
             return TrackerCategory(
-                title: category.title,
-                trackers: trackers
+                    title: category.title,
+                    trackers: trackers
             )
         }
-        
-        // Вывод отфильтрованных категорий
-        print("Filtered categories count: \(filteredCategories.count)")
         collectionView.reloadData()
         reloadPlaceholder()
+        
     }
-
     
     private func reloadPlaceholder() {
         let isEmpty = filteredCategories.isEmpty
@@ -370,7 +357,6 @@ extension TrackerViewController: TrackerCellDelegate {
                 .flatMap({ $0.trackers })
                 .first(where: { $0.id == id }) else { return }
 
-        // Привычка: Добавляем запись за текущий день
         if tracker.type == .habbit {
             let isAlreadyCompleted = trackerRecordStore
                 .fetchAllRecords()
@@ -466,7 +452,6 @@ extension TrackerViewController: TrackerStoreDelegate {
             let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
             let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
 
-            // Вставляем или удаляем элементы
             collectionView.insertItems(at: insertedIndexPaths)
             collectionView.deleteItems(at: deletedIndexPaths)
         } completion: { _ in
@@ -479,16 +464,17 @@ extension TrackerViewController: TrackerStoreDelegate {
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker) {
         print("🛠 Метод didTapCreateButton вызван с categoryTitle: \(categoryTitle)")
+        getAllCategories()
         guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
             print("⚠️ Категория не найдена: \(categoryTitle)")
             return
         }
-        
         dismiss(animated: true)
-        
         do {
             try trackerStore.addNewTracker(trackerToAdd, toCategory: categories[categoryIndex])
+            getAllCategories()
             reloadFiltredCategories()
+
         } catch {
             print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }

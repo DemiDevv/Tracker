@@ -23,7 +23,7 @@ final class TrackerCategoryStore {
     func createCategory(with category: TrackerCategory) {
         let categoryEntity = TrackerCategoryCoreData(context: context)
         categoryEntity.title = category.title
-        categoryEntity.trackers = NSSet()
+        categoryEntity.tracker = NSSet()
 
         do {
             try context.save()
@@ -77,34 +77,13 @@ final class TrackerCategoryStore {
         context.delete(categoryCoreData)
         try context.save()
     }
-
-    // Добавить трекер в существующую категорию
-    func addTracker(_ tracker: Tracker, toCategoryWithTitle title: String) throws {
-        let categoryFetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        categoryFetchRequest.predicate = NSPredicate(format: "title == %@", title)
-
-        guard let categoryCoreData = try context.fetch(categoryFetchRequest).first else {
-            throw TrackerCategoryStoreError.categoryNotFound
-        }
-
-        let trackerCoreData = TrackerCoreData(context: context)
-        trackerCoreData.id = tracker.id
-        trackerCoreData.title = tracker.title
-        trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
-        trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSArray
-        trackerCoreData.type = trackerTyperValueTransformer.transformedValue(tracker.type) as? String
-        trackerCoreData.category = categoryCoreData
-
-        try context.save()
-    }
 }
 
 extension TrackerCategoryStore {
     private func decodingCategory(from trackerCategoryCoreData: TrackerCategoryCoreData) -> TrackerCategory? {
         guard
             let title = trackerCategoryCoreData.title,
-            let trackerCoreDataSet = trackerCategoryCoreData.trackers as? Set<TrackerCoreData>
+            let trackerCoreDataSet = trackerCategoryCoreData.tracker as? Set<TrackerCoreData>
         else {
             return nil
         }

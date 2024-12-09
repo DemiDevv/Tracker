@@ -15,7 +15,6 @@ protocol TrackerStoreProtocol {
     var numberOfSections: Int { get }
     func numberOfRowsInSection(_ section: Int) -> Int
     func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategory) throws
-    func updateExistingTracker(_ trackerCoreData: TrackerCoreData, with tracker: Tracker)
     func getTrackerCoreData(by id: UUID) -> TrackerCoreData?
 }
 
@@ -69,10 +68,15 @@ extension TrackerStore: TrackerStoreProtocol {
         print("Метод addNewTracker вызван")
         guard let categoryCoreData = trackerCategoryStore.getCategoryByTitle(category.title) else {
             print("Категория с названием \(category.title) не найдена.")
-            return
+            throw TrackerStoreError.trackerNotFound
         }
         let trackerCoreData = TrackerCoreData(context: context)
-        updateExistingTracker(trackerCoreData, with: tracker)
+        trackerCoreData.id = tracker.id
+        trackerCoreData.title = tracker.title
+        trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
+        trackerCoreData.emoji = tracker.emoji
+        trackerCoreData.schedule = tracker.schedule as NSObject
+        trackerCoreData.type = trackerTypeValueTransformer.transformedValue(tracker.type) as? String
         trackerCoreData.category = categoryCoreData
         do {
             try context.save()
@@ -82,16 +86,6 @@ extension TrackerStore: TrackerStoreProtocol {
         } catch {
             print("Ошибка при сохранении контекста: \(error.localizedDescription)")
         }
-    }
-
-
-    func updateExistingTracker(_ trackerCoreData: TrackerCoreData, with tracker: Tracker) {
-        trackerCoreData.id = tracker.id
-        trackerCoreData.title = tracker.title
-        trackerCoreData.color = uiColorMarshalling.hexString(from: tracker.color)
-        trackerCoreData.emoji = tracker.emoji
-        trackerCoreData.schedule = daysValueTransformer.transformedValue(tracker.schedule) as? NSArray
-        trackerCoreData.type = trackerTypeValueTransformer.transformedValue(trackerCoreData.type) as? String
     }
     
     func getTrackerCoreData(by id: UUID) -> TrackerCoreData? {
@@ -112,30 +106,8 @@ extension TrackerStore: TrackerStoreProtocol {
             return nil
         }
     }
-
-    func updateTracker(_ tracker: Tracker) throws {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", tracker.id as CVarArg)
-        if let trackerCoreData = try context.fetch(fetchRequest).first {
-            updateExistingTracker(trackerCoreData, with: tracker)
-            try context.save()
-        } else {
-            throw TrackerStoreError.trackerNotFound
-        }
-    }
-
-    func deleteTracker(by id: UUID) throws {
-        let fetchRequest: NSFetchRequest<TrackerCoreData> = TrackerCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        if let trackerCoreData = try context.fetch(fetchRequest).first {
-            context.delete(trackerCoreData)
-            try context.save()
-        } else {
-            throw TrackerStoreError.trackerNotFound
-        }
-    }
 }
-
+    
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         insertedIndexes = IndexSet()

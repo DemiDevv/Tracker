@@ -145,6 +145,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         return view
     }()
     
+    private var categoryTitle: String? = "Важное"
     private let emojis = [
         "😊", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
     ]
@@ -204,7 +205,10 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     }
     
     @objc private func didTapCreateButton() {
-        guard let title = titleTextField.text, !title.isEmpty,
+        print("Selected schedule: \(selectedSchedule)")
+        guard 
+              let categoryTitle,
+              let title = titleTextField.text, !title.isEmpty,
               let color = selectedColor,
               let emoji = selectedEmoji,
               !selectedSchedule.isEmpty else { return }
@@ -217,7 +221,6 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             schedule: selectedSchedule,
             type: .habbit
         )
-        let categoryTitle = "Новая категория"
         if delegate2 == nil {
             print("⚠️ Делегат delegate2 не установлен")
         }
@@ -403,7 +406,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
 
         if indexPath.row == 0 {
             cell.textLabel?.text = "Категория"
-            cell.detailTextLabel?.text = "Новая категория"
+            cell.detailTextLabel?.text = categoryTitle
             cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
             cell.detailTextLabel?.textColor = .grayYp
         } else if indexPath.row == 1 {

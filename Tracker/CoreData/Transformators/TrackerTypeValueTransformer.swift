@@ -10,7 +10,6 @@ import Foundation
         true
     }
 
-    // Преобразование enum в String для хранения
     override func transformedValue(_ value: Any?) -> Any? {
         guard let type = value as? TrackerType else { return nil }
         switch type {
@@ -21,7 +20,6 @@ import Foundation
         }
     }
 
-    // Преобразование String обратно в enum
     override func reverseTransformedValue(_ value: Any?) -> Any? {
         guard let typeString = value as? String else { return nil }
         switch typeString {
@@ -34,7 +32,6 @@ import Foundation
         }
     }
 
-    // Регистрация трансформера
     static func register() {
         ValueTransformer.setValueTransformer(
             TrackerTypeValueTransformer(),

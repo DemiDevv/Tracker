@@ -20,7 +20,7 @@ extension Tracker {
             let typeRaw = trackerCoreData.type,
             let type = TrackerTypeValueTransformer().reverseTransformedValue(typeRaw) as? TrackerType,
             let scheduleData = trackerCoreData.schedule as? Data,
-            let schedule = DaysValueTransformer().reverseTransformedValue(scheduleData) as? [Weekday]
+            let schedule = try? JSONDecoder().decode([Weekday].self, from: scheduleData)
         else {
             return nil
         }
