@@ -23,7 +23,7 @@ final class TrackerCategoryStore {
     func createCategory(with category: TrackerCategory) {
         let categoryEntity = TrackerCategoryCoreData(context: context)
         categoryEntity.title = category.title
-        categoryEntity.tracker = NSSet()
+        categoryEntity.trackers = NSSet()
 
         do {
             try context.save()
@@ -81,17 +81,19 @@ final class TrackerCategoryStore {
 
 extension TrackerCategoryStore {
     private func decodingCategory(from trackerCategoryCoreData: TrackerCategoryCoreData) -> TrackerCategory? {
-        guard
-            let title = trackerCategoryCoreData.title,
-            let trackerCoreDataSet = trackerCategoryCoreData.tracker as? Set<TrackerCoreData>
-        else {
+        guard let title = trackerCategoryCoreData.title else {
+            print("❌ Failed to decode category: title is missing")
             return nil
         }
-        
-        let trackers = trackerCoreDataSet.compactMap { trackerCoreData -> Tracker? in
-            return Tracker(from: trackerCoreData)
+        guard let trackerCoreDataSet = trackerCategoryCoreData.trackers as? Set<TrackerCoreData> else {
+            print("❌ Failed to decode category: trackers data is invalid")
+            return nil
         }
+        let trackers = trackerCoreDataSet.compactMap { Tracker(from: $0) }
         
+        if trackers.isEmpty {
+            print("⚠️ Decoded category with no trackers: \(title)")
+        }
         return TrackerCategory(title: title, trackers: trackers)
     }
 }

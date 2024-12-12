@@ -19,8 +19,7 @@ extension Tracker {
             let emoji = trackerCoreData.emoji,
             let typeRaw = trackerCoreData.type,
             let type = TrackerTypeValueTransformer().reverseTransformedValue(typeRaw) as? TrackerType,
-            let scheduleData = trackerCoreData.schedule as? Data,
-            let schedule = try? JSONDecoder().decode([Weekday].self, from: scheduleData)
+            let schedule = trackerCoreData.schedule as? [Weekday]
         else {
             return nil
         }

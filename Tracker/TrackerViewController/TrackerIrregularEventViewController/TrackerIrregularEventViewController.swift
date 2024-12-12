@@ -140,6 +140,8 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
     ]
     
+    private var categoryTitle: String? = "Важное"
+    weak var delegate2: TrackerHabbitViewControllerDelegate?
     private var optionsTableViewTopConstraint: NSLayoutConstraint!
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
@@ -205,20 +207,30 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     
     @objc private func didTapCancelButton() {
         presentingViewController?.dismiss(animated: true, completion: nil)
+        delegate2?.didTapCancelButton()
     }
     
     @objc private func didTapCreateButton() {
-        guard let title = titleTextField.text, !title.isEmpty,
+        guard
+              let categoryTitle,
+              let title = titleTextField.text, !title.isEmpty,
               let color = selectedColor,
-              let emoji = selectedEmoji
-        else {
-            return
-        }
-        
-        let newTracker = Tracker(id: UUID(), title: title, color: color, emoji: emoji, schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday], type: .event)
-        
-        print("Создаю трекер с title: \(title), emoji: \("😀"), schedule: \(newTracker.schedule)")
+              let emoji = selectedEmoji else { return }
 
+        let newTracker = Tracker(
+            id: UUID(),
+            title: title,
+            color: color,
+            emoji: emoji,
+            schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday],
+            type: .event
+        )
+        if delegate2 == nil {
+            print("⚠️ Делегат delegate2 не установлен")
+        }
+
+        delegate2?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        print("Создан новый трекер: \(newTracker)")
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
@@ -354,7 +366,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         cell.textLabel?.text = "Категория"
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
-        cell.detailTextLabel?.text = "Новая категория"
+        cell.detailTextLabel?.text = categoryTitle
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
         cell.detailTextLabel?.textColor = .grayYp
         return cell

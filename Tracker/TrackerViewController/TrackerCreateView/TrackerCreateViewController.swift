@@ -93,12 +93,20 @@ final class TrackerCreateViewController: UIViewController {
     }
 
     @objc private func didIrregEventButtonTap() {
-        let trackerCreateVC = TrackerIrregularEventViewController()
+        guard let trackerVC = trackerViewController else {
+            print("⚠️ TrackerViewController не установлен")
+            return
+        }
+
+        let trackerHabbitVC = trackerVC.trackerIrregularEventViewController
         if let navigationController = self.navigationController {
-            navigationController.pushViewController(trackerCreateVC, animated: true)
+            navigationController.pushViewController(trackerHabbitVC, animated: true)
+            print("✅ Перешли с помощью pushViewController")
         } else {
-            trackerCreateVC.modalPresentationStyle = .pageSheet
-            present(trackerCreateVC, animated: true, completion: nil)
+            trackerHabbitVC.modalPresentationStyle = .pageSheet
+            present(trackerHabbitVC, animated: true) {
+                print("✅ Контроллер представлен модально")
+            }
         }
     }
 }

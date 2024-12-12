@@ -78,6 +78,7 @@ extension TrackerStore: TrackerStoreProtocol {
         trackerCoreData.schedule = tracker.schedule as NSObject
         trackerCoreData.type = trackerTypeValueTransformer.transformedValue(tracker.type) as? String
         trackerCoreData.category = categoryCoreData
+        categoryCoreData.addToTrackers(trackerCoreData)
         do {
             try context.save()
             print("Трекер успешно добавлен в базу данных")

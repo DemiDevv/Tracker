@@ -230,21 +230,17 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
-
     func updateCollectionViewHeights() {
         let itemHeight: CGFloat = 52
         let itemsPerRow: CGFloat = 6
         let interItemSpacing: CGFloat = 5
 
-        // Определяем количество строк
         let emojiRows = ceil(CGFloat(emojis.count) / itemsPerRow)
         let colorRows = ceil(CGFloat(colors.count) / itemsPerRow)
         
-        // Рассчитываем итоговую высоту коллекции
         let emojiHeight = emojiRows * itemHeight + max(emojiRows - 1, 0) * interItemSpacing
         let colorHeight = colorRows * itemHeight + max(colorRows - 1, 0) * interItemSpacing
         
-        // Устанавливаем высоты
         emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
         colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
     }

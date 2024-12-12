@@ -22,7 +22,7 @@ final class TrackerRecordStore {
         trackerRecordEntity.date = trackerRecord.date
         
         let trackerCoreData = trackerStore.getTrackerCoreData(by: trackerRecord.trackerID)
-        trackerRecordEntity.tracker = trackerCoreData
+        trackerRecordEntity.trackers = trackerCoreData
         
         do {
             try context.save()

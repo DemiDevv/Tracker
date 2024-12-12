@@ -12,7 +12,7 @@ extension TrackerCategory {
             return nil
         }
         
-        let trackerList = categoryCoreData.tracker as? Set<Tracker> ?? []
+        let trackerList: [Tracker] = (categoryCoreData.trackers as? Set<TrackerCoreData>)?.compactMap { Tracker(from: $0) } ?? []
         
         self.title = title
         self.trackers = Array(trackerList)

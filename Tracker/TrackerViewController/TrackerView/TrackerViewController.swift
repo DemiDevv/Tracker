@@ -113,6 +113,11 @@ final class TrackerViewController: UIViewController {
         viewController.delegate2 = self
         return viewController
     }()
+    lazy var trackerIrregularEventViewController: TrackerIrregularEventViewController = {
+        let viewController = TrackerIrregularEventViewController()
+        viewController.delegate2 = self
+        return viewController
+    }()
     weak var delegate2: TrackerHabbitViewControllerDelegate?
     
     // MARK: - Lifecycle
@@ -120,21 +125,18 @@ final class TrackerViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .white
         trackerStore.delegate = self
-        
-        setupTrackerView()
-        updateUI()
-        setupCollectionView()
-        
         getAllCategories()
-        
         // TODO: Mock Data
         if categories.isEmpty {
             print("Load Mock Data")
             trackerCategoryStore.createCategory(with: TrackerCategory(title: "Важное", trackers: []))
             getAllCategories()
         }
-        
         getCompletedTrackers()
+        
+        setupTrackerView()
+        updateUI()
+        setupCollectionView()
     }
     
     // MARK: - Setup UI
@@ -383,7 +385,7 @@ extension TrackerViewController: TrackerCellDelegate {
                 trackerRecordStore.addTrackerRecord(with: trackerRecord)
             }
         }
-
+        getCompletedTrackers()
         collectionView.reloadItems(at: [indexPath])
         collectionView.reloadData()
     }
@@ -411,7 +413,7 @@ extension TrackerViewController: TrackerCellDelegate {
                 trackerRecordStore.deleteRecord(for: record)
             }
         }
-
+        getCompletedTrackers()
         collectionView.reloadItems(at: [indexPath])
         collectionView.reloadData()
     }
@@ -446,25 +448,9 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension TrackerViewController: TrackerStoreDelegate {
-    func didUpdate(_ update: TrackerStoreUpdate) {
-        collectionView.performBatchUpdates {
-            let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
-            let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
-
-            collectionView.insertItems(at: insertedIndexPaths)
-            collectionView.deleteItems(at: deletedIndexPaths)
-        } completion: { _ in
-            // После выполнения обновлений, перезагружаем данные
-            self.collectionView.reloadData()
-        }
-    }
-}
-
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker) {
         print("🛠 Метод didTapCreateButton вызван с categoryTitle: \(categoryTitle)")
-        getAllCategories()
         guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
             print("⚠️ Категория не найдена: \(categoryTitle)")
             return
@@ -472,9 +458,10 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
         dismiss(animated: true)
         do {
             try trackerStore.addNewTracker(trackerToAdd, toCategory: categories[categoryIndex])
-            getAllCategories()
-            reloadFiltredCategories()
-
+                getAllCategories()
+                getCompletedTrackers()
+                reloadFiltredCategories()
+            
         } catch {
             print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }
@@ -485,3 +472,16 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     }
 }
 
+extension TrackerViewController: TrackerStoreDelegate {
+    func didUpdate(_ update: TrackerStoreUpdate) {
+        collectionView.performBatchUpdates {
+            let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
+            let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
+
+            collectionView.insertItems(at: insertedIndexPaths)
+            collectionView.deleteItems(at: deletedIndexPaths)
+        } completion: { _ in
+            self.collectionView.reloadData()
+        }
+    }
+}
