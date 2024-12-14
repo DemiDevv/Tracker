@@ -132,6 +132,13 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         return view
     }()
     
+    private lazy var tapGesture: UITapGestureRecognizer = {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        self.view.addGestureRecognizer(tapGesture)
+        return tapGesture
+    }()
+    
     private var categoryTitle: String? = "Важное"
     weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
     private var optionsTableViewTopConstraint: NSLayoutConstraint!
@@ -143,7 +150,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+        view.addGestureRecognizer(tapGesture)
         optionsTableView.dataSource = self
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
@@ -153,6 +160,11 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         setupViewsWithoutStackView()
     }
 
+    @objc
+    private func hideKeyboard() {
+        self.view.endEditing(true)
+    }
+    
     func updateCollectionViewHeights() {
         let itemHeight: CGFloat = 52 // Высота одной ячейки
         let itemsPerRow: CGFloat = 6 // Количество столбцов
