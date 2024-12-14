@@ -3,23 +3,20 @@ import CoreData
 
 final class TrackerCategoryStore {
     private let context: NSManagedObjectContext
-    private let uiColorMarshalling = UIColorMarshalling()
-    private let daysValueTransformer = DaysValueTransformer()
-    private let trackerTyperValueTransformer = TrackerTypeValueTransformer()
 
     enum TrackerCategoryStoreError: Error {
         case categoryNotFound
-        case trackerNotFound
     }
 
-    init(context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext) {
+    init(context: NSManagedObjectContext = {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError("Unable to retrieve AppDelegate")
+        }
+        return appDelegate.persistentContainer.viewContext
+    }()) {
         self.context = context
     }
-    
-    func performContextOperation(_ operation: (NSManagedObjectContext) -> Void) {
-        operation(context)
-    }
-    
+
     func createCategory(with category: TrackerCategory) {
         let categoryEntity = TrackerCategoryCoreData(context: context)
         categoryEntity.title = category.title

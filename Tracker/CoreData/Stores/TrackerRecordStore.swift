@@ -3,15 +3,14 @@ import CoreData
 
 final class TrackerRecordStore {
     private let context: NSManagedObjectContext
-    private let uiColorMarshalling = UIColorMarshalling()
     private let trackerStore = TrackerStore()
     
-    convenience init() {
-        let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-        self.init(context: context)
-    }
-    
-    init(context: NSManagedObjectContext) {
+    init(context: NSManagedObjectContext = {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+            fatalError("Unable to retrieve AppDelegate")
+        }
+        return appDelegate.persistentContainer.viewContext
+    }()) {
         self.context = context
     }
     
@@ -32,25 +31,17 @@ final class TrackerRecordStore {
         }
     }
     
-    
     func fetchAllRecords() -> [TrackerRecord] {
         let fetchRequest: NSFetchRequest<TrackerRecordCoreData> = TrackerRecordCoreData.fetchRequest()
         
         do {
-            let trackerRecordsCoreDataArray = try context.fetch(fetchRequest)
-            
-            let trackerRecords = trackerRecordsCoreDataArray.compactMap { trackerRecordCoreData -> TrackerRecord? in
-                guard
-                    let trackerID = trackerRecordCoreData.trackerID,
-                    let date = trackerRecordCoreData.date
-                else {
-                    return nil
+            return try context
+                .fetch(fetchRequest)
+                .compactMap { trackerRecordCoreData -> TrackerRecord? in
+                    guard let trackerID = trackerRecordCoreData.trackerID,
+                          let date = trackerRecordCoreData.date else { return nil }
+                    return TrackerRecord(trackerID: trackerID, date: date)
                 }
-                
-                return TrackerRecord(trackerID: trackerID, date: date)
-            }
-            
-            return trackerRecords
         } catch {
             print("❌ Failed to fetch tracker records: \(error)")
             return []

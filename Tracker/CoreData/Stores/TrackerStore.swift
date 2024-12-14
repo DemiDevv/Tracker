@@ -22,7 +22,6 @@ final class TrackerStore: NSObject {
     private let context: NSManagedObjectContext
     private let trackerCategoryStore = TrackerCategoryStore()
     private let uiColorMarshalling = UIColorMarshalling()
-    private let daysValueTransformer = DaysValueTransformer()
     private let trackerTypeValueTransformer = TrackerTypeValueTransformer()
     private var insertedIndexes: IndexSet?
     private var deletedIndexes: IndexSet?
@@ -32,9 +31,15 @@ final class TrackerStore: NSObject {
         case trackerNotFound
     }
     
-    init(context: NSManagedObjectContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext) {
+    init(context: NSManagedObjectContext = {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+        fatalError("Unable to retrieve AppDelegate")
+    }
+        return appDelegate.persistentContainer.viewContext
+    }()) {
         self.context = context
     }
+    
     
     private lazy var fetchedResultsController: NSFetchedResultsController<TrackerCoreData> = {
         
@@ -50,20 +55,12 @@ final class TrackerStore: NSObject {
         return fetchedResultsController
     }()
 }
-    
-extension TrackerStore: TrackerStoreProtocol {
-    var numberOfTrackers: Int {
-        fetchedResultsController.fetchedObjects?.count ?? 0
-    }
-    
-    var numberOfSections: Int {
-        fetchedResultsController.sections?.count ?? 0
-    }
-    
-    func numberOfRowsInSection(_ section: Int) -> Int {
-        fetchedResultsController.sections?[section].numberOfObjects ?? 0
-    }
 
+extension TrackerStore: TrackerStoreProtocol {
+    var numberOfTrackers: Int { fetchedResultsController.fetchedObjects?.count ?? .zero }
+    var numberOfSections: Int { fetchedResultsController.sections?.count ?? .zero }
+    func numberOfRowsInSection(_ section: Int) -> Int { fetchedResultsController.sections?[section].numberOfObjects ?? .zero }
+    
     func addNewTracker(_ tracker: Tracker, toCategory category: TrackerCategory) throws {
         print("Метод addNewTracker вызван")
         guard let categoryCoreData = trackerCategoryStore.getCategoryByTitle(category.title) else {
@@ -83,7 +80,7 @@ extension TrackerStore: TrackerStoreProtocol {
             try context.save()
             print("Трекер успешно добавлен в базу данных")
             try fetchedResultsController.performFetch()
-                print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
+            print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
         } catch {
             print("Ошибка при сохранении контекста: \(error.localizedDescription)")
         }
@@ -108,18 +105,20 @@ extension TrackerStore: TrackerStoreProtocol {
         }
     }
 }
-    
+
 extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         insertedIndexes = IndexSet()
         deletedIndexes = IndexSet()
     }
-
+    
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        guard let insert = insertedIndexes, let deleted = deletedIndexes else { return }
+        
         delegate?.didUpdate(TrackerStoreUpdate(
-                insertedIndexes: insertedIndexes!,
-                deletedIndexes: deletedIndexes!
-            )
+            insertedIndexes: insert,
+            deletedIndexes: deleted
+        )
         )
         insertedIndexes = nil
         deletedIndexes = nil
@@ -129,13 +128,11 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         
         switch type {
         case .delete:
-            if let indexPath = indexPath {
-                deletedIndexes?.insert(indexPath.item)
-            }
+            guard let indexPath else { return }
+            deletedIndexes?.insert(indexPath.item)
         case .insert:
-            if let indexPath = newIndexPath {
-                insertedIndexes?.insert(indexPath.item)
-            }
+            guard let newIndexPath else { return }
+            insertedIndexes?.insert(newIndexPath.item)
         default:
             break
         }

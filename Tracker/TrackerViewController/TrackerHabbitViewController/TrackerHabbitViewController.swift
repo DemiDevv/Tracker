@@ -6,12 +6,12 @@ protocol TrackerHabbitViewControllerDelegate: AnyObject {
 }
 
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
-    private var optionsTableViewTopConstraint: NSLayoutConstraint!
+    private var optionsTableViewTopConstraint: NSLayoutConstraint?
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var selectedSchedule = [Weekday]()
-    weak var delegate: ScheduleViewControllerDelegate?
-    weak var delegate2: TrackerHabbitViewControllerDelegate?
+    weak var scheduleDelegate: ScheduleViewControllerDelegate?
+    weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
     
     var onTrackerCreated: ((Tracker) -> Void)?
     
@@ -35,7 +35,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         textField.layer.masksToBounds = true
         textField.leftViewMode = .always
         textField.translatesAutoresizingMaskIntoConstraints = false
-
+        
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         return textField
     }()
@@ -50,7 +50,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         label.isHidden = true
         return label
     }()
-
+    
     private lazy var optionsTableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.isScrollEnabled = false
@@ -62,8 +62,6 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         tableView.separatorColor = .lightGray  // Цвет разделителей
         return tableView
     }()
-    
-    
     
     private lazy var emojiLabel: UILabel = {
         let emojiLabel = UILabel()
@@ -132,28 +130,27 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         button.addTarget(self, action: #selector(tapCancelButton), for: .touchUpInside)
         return button
     }()
-
+    
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
-
+    
     private lazy var scrollContentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    private var categoryTitle: String? = "Важное"
-    private let emojis = [
-        "😊", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
-    ]
-
-    private let colors: [UIColor] = [
-        .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
-    ]
+    private lazy var tapGesture: UITapGestureRecognizer = {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        self.view.addGestureRecognizer(tapGesture)
+        return tapGesture
+    }()
     
+    private var categoryTitle: String? = "Важное"
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
@@ -169,9 +166,14 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         
         emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
         colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
-
+        
         updateCollectionViewHeights()
         
+    }
+    
+    @objc
+    private func hideKeyboard() {
+        self.view.endEditing(true)
     }
     
     @objc private func textFieldDidChange() {
@@ -183,14 +185,14 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             createButton.backgroundColor = .grayYp
             
             // Меняем отступ на 32, если лейбл виден
-            optionsTableViewTopConstraint.constant = 62
+            optionsTableViewTopConstraint?.constant = 62
         } else {
             maxLengthLabel.isHidden = true
             createButton.isEnabled = !text.isEmpty
             createButton.backgroundColor = text.isEmpty ? .grayYp : .blackDayYp
             
             // Меняем отступ на 24, если лейбл скрыт
-            optionsTableViewTopConstraint.constant = 24
+            optionsTableViewTopConstraint?.constant = 24
         }
         
         // Анимируем изменение отступа
@@ -201,18 +203,18 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     
     @objc private func tapCancelButton() {
         dismiss(animated: true)
-        delegate2?.didTapCancelButton()
+        trackerHabbitDelegate?.didTapCancelButton()
     }
     
     @objc private func didTapCreateButton() {
         print("Selected schedule: \(selectedSchedule)")
-        guard 
-              let categoryTitle,
-              let title = titleTextField.text, !title.isEmpty,
-              let color = selectedColor,
-              let emoji = selectedEmoji,
-              !selectedSchedule.isEmpty else { return }
-
+        guard
+            let categoryTitle,
+            let title = titleTextField.text, !title.isEmpty,
+            let color = selectedColor,
+            let emoji = selectedEmoji,
+            !selectedSchedule.isEmpty else { return }
+        
         let newTracker = Tracker(
             id: UUID(),
             title: title,
@@ -221,22 +223,22 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             schedule: selectedSchedule,
             type: .habbit
         )
-        if delegate2 == nil {
+        if trackerHabbitDelegate == nil {
             print("⚠️ Делегат delegate2 не установлен")
         }
-
-        delegate2?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        
+        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
         print("Создан новый трекер: \(newTracker)")
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
-
+    
     func updateCollectionViewHeights() {
         let itemHeight: CGFloat = 52
         let itemsPerRow: CGFloat = 6
         let interItemSpacing: CGFloat = 5
-
-        let emojiRows = ceil(CGFloat(emojis.count) / itemsPerRow)
-        let colorRows = ceil(CGFloat(colors.count) / itemsPerRow)
+        
+        let emojiRows = ceil(CGFloat(Constants.emojis.count) / itemsPerRow)
+        let colorRows = ceil(CGFloat(Constants.colors.count) / itemsPerRow)
         
         let emojiHeight = emojiRows * itemHeight + max(emojiRows - 1, 0) * interItemSpacing
         let colorHeight = colorRows * itemHeight + max(colorRows - 1, 0) * interItemSpacing
@@ -267,7 +269,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         let shortNames = selectedSchedule.compactMap { weekdayShortNames[$0] }
         return shortNames.joined(separator: ", ")
     }
-
+    
     private func setupViews() {
         // Добавляем фиксированные элементы на основной view
         view.addSubview(habbitTitle)
@@ -291,8 +293,9 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         buttonContainerView.addSubview(createButton)
         
         optionsTableViewTopConstraint = optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24)
-        optionsTableViewTopConstraint.isActive = true
-
+        optionsTableViewTopConstraint?.isActive = true
+        
+        guard let constant = optionsTableViewTopConstraint else { return }
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
@@ -309,7 +312,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             maxLengthLabel.heightAnchor.constraint(equalToConstant: 22),
             
             // Устанавливаем констрейнт с сохранением ссылки
-            optionsTableViewTopConstraint,
+            constant,
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             optionsTableView.heightAnchor.constraint(equalToConstant: 150)
@@ -382,8 +385,8 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         emojiCollectionView.allowsMultipleSelection = false
         colorCollectionView.allowsMultipleSelection = false
     }
-
-
+    
+    
     
     // MARK: - UITableViewDataSource
     
@@ -399,7 +402,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "optionCell")
-
+        
         if indexPath.row == 0 {
             cell.textLabel?.text = "Категория"
             cell.detailTextLabel?.text = categoryTitle
@@ -412,14 +415,14 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
             cell.detailTextLabel?.textColor = .grayYp
         }
-
+        
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
         return cell
     }
-
-
-
+    
+    
+    
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
@@ -467,9 +470,9 @@ extension TrackerHabbitViewController: UICollectionViewDataSource {
         numberOfItemsInSection section: Int
     ) -> Int {
         if collectionView == emojiCollectionView {
-            return emojis.count
+            return Constants.emojis.count
         } else if collectionView == colorCollectionView {
-            return colors.count
+            return Constants.colors.count
         }
         return 0
     }
@@ -482,14 +485,14 @@ extension TrackerHabbitViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as? TrackerHabbitViewCell else {
                 return UICollectionViewCell()
             }
-            cell.titleLabel.text = emojis[indexPath.row]
+            cell.titleLabel.text = Constants.emojis[indexPath.row]
             cell.colorView.isHidden = true // Скрываем colorView для Emoji ячейки
             return cell
         } else if collectionView == colorCollectionView {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? TrackerHabbitViewCell else {
                 return UICollectionViewCell()
             }
-            cell.innerColorView.backgroundColor = colors[indexPath.row]
+            cell.innerColorView.backgroundColor = Constants.colors[indexPath.row]
             cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
             cell.colorView.isHidden = false
             return cell
@@ -505,9 +508,9 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
         cell.titleLabel.backgroundColor = .lightGrayYp
         
         if collectionView == emojiCollectionView {
-            selectedEmoji = emojis[indexPath.row]
+            selectedEmoji = Constants.emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
-            selectedColor = colors[indexPath.row]
+            selectedColor = Constants.colors[indexPath.row]
             cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
@@ -531,7 +534,7 @@ extension TrackerHabbitViewController: UICollectionViewDelegateFlowLayout {
     ) -> CGFloat {
         return 5// Отступ между столбцами
     }
-
+    
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
