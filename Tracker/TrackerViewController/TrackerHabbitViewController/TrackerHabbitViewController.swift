@@ -1,11 +1,24 @@
 import UIKit
 
-final class TrackerIrregularEventViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+protocol TrackerHabbitViewControllerDelegate: AnyObject {
+    func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker)
+    func didTapCancelButton()
+}
+
+final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    private var optionsTableViewTopConstraint: NSLayoutConstraint?
+    private var selectedEmoji: String?
+    private var selectedColor: UIColor?
+    private var selectedSchedule = [Weekday]()
+    weak var scheduleDelegate: ScheduleViewControllerDelegate?
+    weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
+    
+    var onTrackerCreated: ((Tracker) -> Void)?
     
     // MARK: - UI Elements
-    private lazy var irRegularTitle: UILabel = {
+    private lazy var habbitTitle: UILabel = {
         let label = UILabel()
-        label.text = "Новое нерегулярное событие"
+        label.text = "Новая привычка"
         label.font = .systemFont(ofSize: 16)
         label.tintColor = .black
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -22,7 +35,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         textField.layer.masksToBounds = true
         textField.leftViewMode = .always
         textField.translatesAutoresizingMaskIntoConstraints = false
-
+        
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         return textField
     }()
@@ -49,8 +62,6 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         tableView.separatorColor = .lightGray  // Цвет разделителей
         return tableView
     }()
-    
-    
     
     private lazy var emojiLabel: UILabel = {
         let emojiLabel = UILabel()
@@ -116,7 +127,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         button.layer.borderColor = UIColor.systemRed.cgColor
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.addTarget(self, action: #selector(didTapCancelButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(tapCancelButton), for: .touchUpInside)
         return button
     }()
     
@@ -125,58 +136,45 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
-
+    
     private lazy var scrollContentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    private let emojis = [
-        "😊", "😻", "🌺", "🐶", "❤️", "😱", "😇", "😡", "🥶", "🤔", "🙌", "🍔", "🥦", "🏓", "🥇", "🎸", "🏝", "😪"
-    ]
-
-    private let colors: [UIColor] = [
-        .colorSelection1, .colorSelection2, .colorSelection3, .colorSelection4, .colorSelection5, .colorSelection6, .colorSelection7, .colorSelection8, .colorSelection9, .colorSelection10, .colorSelection11, .colorSelection12, .colorSelection13, .colorSelection14, .colorSelection15, .colorSelection16, .colorSelection17, .colorSelection18
-    ]
+    private lazy var tapGesture: UITapGestureRecognizer = {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(hideKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        self.view.addGestureRecognizer(tapGesture)
+        return tapGesture
+    }()
     
-    private var optionsTableViewTopConstraint: NSLayoutConstraint!
-    private var selectedEmoji: String?
-    private var selectedColor: UIColor?
-    
+    private var categoryTitle: String? = "Важное"
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+        view.addGestureRecognizer(tapGesture)
         optionsTableView.dataSource = self
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
         
+        setupViews()
+        
+        emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+        colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+        
         updateCollectionViewHeights()
-        setupViewsWithoutStackView()
-    }
-
-    func updateCollectionViewHeights() {
-        let itemHeight: CGFloat = 52 // Высота одной ячейки
-        let itemsPerRow: CGFloat = 6 // Количество столбцов
-        let interItemSpacing: CGFloat = 5 // Отступ между элементами
-
-        // Определяем количество строк
-        let emojiRows = ceil(CGFloat(emojis.count) / itemsPerRow)
-        let colorRows = ceil(CGFloat(colors.count) / itemsPerRow)
         
-        // Рассчитываем итоговую высоту коллекции
-        let emojiHeight = emojiRows * itemHeight + max(emojiRows - 1, 0) * interItemSpacing
-        let colorHeight = colorRows * itemHeight + max(colorRows - 1, 0) * interItemSpacing
-        
-        // Устанавливаем высоты
-        emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
-        colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
     }
-
+    
+    @objc
+    private func hideKeyboard() {
+        self.view.endEditing(true)
+    }
     
     @objc private func textFieldDidChange() {
         guard let text = titleTextField.text else { return }
@@ -187,14 +185,14 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
             createButton.backgroundColor = .grayYp
             
             // Меняем отступ на 32, если лейбл виден
-            optionsTableViewTopConstraint.constant = 62
+            optionsTableViewTopConstraint?.constant = 62
         } else {
             maxLengthLabel.isHidden = true
             createButton.isEnabled = !text.isEmpty
             createButton.backgroundColor = text.isEmpty ? .grayYp : .blackDayYp
             
             // Меняем отступ на 24, если лейбл скрыт
-            optionsTableViewTopConstraint.constant = 24
+            optionsTableViewTopConstraint?.constant = 24
         }
         
         // Анимируем изменение отступа
@@ -203,30 +201,78 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         }
     }
     
-    @objc private func didTapCancelButton() {
-        presentingViewController?.dismiss(animated: true, completion: nil)
+    @objc private func tapCancelButton() {
+        dismiss(animated: true)
+        trackerHabbitDelegate?.didTapCancelButton()
     }
     
     @objc private func didTapCreateButton() {
-        guard let title = titleTextField.text, !title.isEmpty,
-              let color = selectedColor,
-              let emoji = selectedEmoji
-        else {
-            return
+        print("Selected schedule: \(selectedSchedule)")
+        guard
+            let categoryTitle,
+            let title = titleTextField.text, !title.isEmpty,
+            let color = selectedColor,
+            let emoji = selectedEmoji,
+            !selectedSchedule.isEmpty else { return }
+        
+        let newTracker = Tracker(
+            id: UUID(),
+            title: title,
+            color: color,
+            emoji: emoji,
+            schedule: selectedSchedule,
+            type: .habbit
+        )
+        if trackerHabbitDelegate == nil {
+            print("⚠️ Делегат delegate2 не установлен")
         }
         
-        let newTracker = Tracker(id: UUID(), title: title, color: color, emoji: emoji, schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday], type: .event)
-
-        NotificationCenter.default.post(name: .didCreateNewTracker, object: newTracker)
-        
-        print("Создаю трекер с title: \(title), emoji: \("😀"), schedule: \(newTracker.schedule)")
-
+        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        print("Создан новый трекер: \(newTracker)")
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
-
-    private func setupViewsWithoutStackView() {
+    
+    func updateCollectionViewHeights() {
+        let itemHeight: CGFloat = 52
+        let itemsPerRow: CGFloat = 6
+        let interItemSpacing: CGFloat = 5
+        
+        let emojiRows = ceil(CGFloat(Constants.emojis.count) / itemsPerRow)
+        let colorRows = ceil(CGFloat(Constants.colors.count) / itemsPerRow)
+        
+        let emojiHeight = emojiRows * itemHeight + max(emojiRows - 1, 0) * interItemSpacing
+        let colorHeight = colorRows * itemHeight + max(colorRows - 1, 0) * interItemSpacing
+        
+        emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
+        colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
+    }
+    
+    private func presentScheduleViewController() {
+        let scheduleVC = ScheduleViewController()
+        scheduleVC.delegate = self
+        present(scheduleVC, animated: true, completion: nil)
+    }
+    
+    private func selectedScheduleString() -> String {
+        guard !selectedSchedule.isEmpty else { return "" }
+        
+        let weekdayShortNames: [Weekday: String] = [
+            .monday: "Пн",
+            .tuesday: "Вт",
+            .wednesday: "Ср",
+            .thursday: "Чт",
+            .friday: "Пт",
+            .saturday: "Сб",
+            .sunday: "Вс"
+        ]
+        
+        let shortNames = selectedSchedule.compactMap { weekdayShortNames[$0] }
+        return shortNames.joined(separator: ", ")
+    }
+    
+    private func setupViews() {
         // Добавляем фиксированные элементы на основной view
-        view.addSubview(irRegularTitle)
+        view.addSubview(habbitTitle)
         view.addSubview(titleTextField)
         view.addSubview(maxLengthLabel)
         view.addSubview(optionsTableView)
@@ -247,14 +293,16 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         buttonContainerView.addSubview(createButton)
         
         optionsTableViewTopConstraint = optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24)
-        optionsTableViewTopConstraint.isActive = true
+        optionsTableViewTopConstraint?.isActive = true
+        
+        guard let constant = optionsTableViewTopConstraint else { return }
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
-            irRegularTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            irRegularTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            habbitTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            habbitTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            titleTextField.topAnchor.constraint(equalTo: irRegularTitle.bottomAnchor, constant: 24),
+            titleTextField.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24),
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             titleTextField.heightAnchor.constraint(equalToConstant: 75),
@@ -264,10 +312,10 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
             maxLengthLabel.heightAnchor.constraint(equalToConstant: 22),
             
             // Устанавливаем констрейнт с сохранением ссылки
-            optionsTableViewTopConstraint,
+            constant,
             optionsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             optionsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            optionsTableView.heightAnchor.constraint(equalToConstant: 75)
+            optionsTableView.heightAnchor.constraint(equalToConstant: 150)
         ])
         
         // Констрейнты для scrollView
@@ -291,13 +339,14 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         NSLayoutConstraint.activate([
             emojiLabel.topAnchor.constraint(equalTo: scrollContentView.topAnchor, constant: 0),
             emojiLabel.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 28),
-            emojiLabel.heightAnchor.constraint(equalToConstant: 18),
+            emojiLabel.heightAnchor.constraint(equalToConstant: 52),
+            emojiLabel.widthAnchor.constraint(equalToConstant: 52),
             
             emojiCollectionView.topAnchor.constraint(equalTo: emojiLabel.bottomAnchor, constant: 8),
             emojiCollectionView.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 16),
             emojiCollectionView.trailingAnchor.constraint(equalTo: scrollContentView.trailingAnchor, constant: -16),
             
-            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),  // Отступ 16
+            colorLabel.topAnchor.constraint(equalTo: emojiCollectionView.bottomAnchor, constant: 16),
             colorLabel.leadingAnchor.constraint(equalTo: scrollContentView.leadingAnchor, constant: 28),
             colorLabel.heightAnchor.constraint(equalToConstant: 18),
             
@@ -313,9 +362,8 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
             buttonContainerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             buttonContainerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             buttonContainerView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            buttonContainerView.heightAnchor.constraint(equalToConstant: 66), // Увеличиваем высоту на 16 (50 + 16)
+            buttonContainerView.heightAnchor.constraint(equalToConstant: 66),
             
-            // Констрейнты для `cancelButton`
             cancelButton.leadingAnchor.constraint(equalTo: buttonContainerView.leadingAnchor),
             cancelButton.topAnchor.constraint(equalTo: buttonContainerView.topAnchor, constant: 16), // Отступ от верхнего края контейнера
             cancelButton.bottomAnchor.constraint(equalTo: buttonContainerView.bottomAnchor),
@@ -337,13 +385,15 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         emojiCollectionView.allowsMultipleSelection = false
         colorCollectionView.allowsMultipleSelection = false
     }
-
+    
+    
+    
     // MARK: - UITableViewDataSource
     
     
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1 // Категория и Расписание
+        return 2 // Категория и Расписание
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -353,14 +403,26 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "optionCell")
         
-        cell.textLabel?.text = "Категория"
+        if indexPath.row == 0 {
+            cell.textLabel?.text = "Категория"
+            cell.detailTextLabel?.text = categoryTitle
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
+            cell.detailTextLabel?.textColor = .grayYp
+        } else if indexPath.row == 1 {
+            cell.textLabel?.text = "Расписание"
+            cell.detailTextLabel?.text = selectedScheduleString()
+            print("\(selectedScheduleString())")
+            cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
+            cell.detailTextLabel?.textColor = .grayYp
+        }
+        
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
-        cell.detailTextLabel?.text = "Новая категория"
-        cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
-        cell.detailTextLabel?.textColor = .grayYp
         return cell
     }
+    
+    
+    
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
@@ -380,10 +442,8 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         tableView.deselectRow(at: indexPath, animated: true)
         
         if indexPath.row == 1 {
-            let scheduleVC = ScheduleViewController()
-            scheduleVC.modalPresentationStyle = .pageSheet
-            present(scheduleVC, animated: true, completion: nil)
-
+            titleTextField.resignFirstResponder()
+            presentScheduleViewController()
         }
     }
     
@@ -404,15 +464,15 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
 }
 
 
-extension TrackerIrregularEventViewController: UICollectionViewDataSource {
+extension TrackerHabbitViewController: UICollectionViewDataSource {
     func collectionView(
         _ collectionView: UICollectionView,
         numberOfItemsInSection section: Int
     ) -> Int {
         if collectionView == emojiCollectionView {
-            return emojis.count
+            return Constants.emojis.count
         } else if collectionView == colorCollectionView {
-            return colors.count
+            return Constants.colors.count
         }
         return 0
     }
@@ -425,15 +485,15 @@ extension TrackerIrregularEventViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as? TrackerHabbitViewCell else {
                 return UICollectionViewCell()
             }
-            cell.titleLabel.text = emojis[indexPath.row]
+            cell.titleLabel.text = Constants.emojis[indexPath.row]
             cell.colorView.isHidden = true // Скрываем colorView для Emoji ячейки
             return cell
         } else if collectionView == colorCollectionView {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ColorCell", for: indexPath) as? TrackerHabbitViewCell else {
                 return UICollectionViewCell()
             }
-            cell.innerColorView.backgroundColor = colors[indexPath.row]
-            cell.titleLabel.isHidden = true
+            cell.innerColorView.backgroundColor = Constants.colors[indexPath.row]
+            cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
             cell.colorView.isHidden = false
             return cell
         }
@@ -441,16 +501,16 @@ extension TrackerIrregularEventViewController: UICollectionViewDataSource {
     }
 }
 
-extension TrackerIrregularEventViewController: UICollectionViewDelegate {
+extension TrackerHabbitViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
         cell.titleLabel.backgroundColor = .lightGrayYp
         
         if collectionView == emojiCollectionView {
-            selectedEmoji = emojis[indexPath.row]
+            selectedEmoji = Constants.emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
-            selectedColor = colors[indexPath.row]
+            selectedColor = Constants.colors[indexPath.row]
             cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
@@ -462,8 +522,7 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegate {
     }
 }
 
-
-extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayout {
+extension TrackerHabbitViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: 52, height: 52)
     }
@@ -475,7 +534,7 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
     ) -> CGFloat {
         return 5// Отступ между столбцами
     }
-
+    
     func collectionView(
         _ collectionView: UICollectionView,
         layout collectionViewLayout: UICollectionViewLayout,
@@ -493,4 +552,10 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
     }
 }
 
-
+extension TrackerHabbitViewController: ScheduleViewControllerDelegate {
+    func didSelectSchedule(_ selectedDays: [Weekday]) {
+        print("Selected days: \(selectedDays)")  // Печать для проверки
+        selectedSchedule = selectedDays
+        optionsTableView.reloadData()
+    }
+}
