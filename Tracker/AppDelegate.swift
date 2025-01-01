@@ -11,7 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         TrackerTypeValueTransformer.register()
 
         window = UIWindow()
-        window?.rootViewController = TabBarController()
+        window?.rootViewController = OnboardingViewController()
         window?.makeKeyAndVisible()
         return true
     }
