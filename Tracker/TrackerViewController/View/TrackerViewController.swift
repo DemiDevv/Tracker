@@ -86,6 +86,13 @@ final class TrackerViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
+    
+//    private var viewModel: TrackerViewModel?
+//    
+//    func initialize(viewModel: TrackerViewModel) {
+//        self.viewModel = viewModel
+//        bind()
+//    }
 
     var categories: [TrackerCategory] = []
     private var filteredCategories: [TrackerCategory] = []
@@ -110,7 +117,6 @@ final class TrackerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        trackerStore.delegate = self
         getAllCategories()
         // TODO: Mock Data
         if categories.isEmpty {
@@ -447,19 +453,5 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     
     func didTapCancelButton() {
         dismiss(animated: true)
-    }
-}
-
-extension TrackerViewController: TrackerStoreDelegate {
-    func didUpdate(_ update: TrackerStoreUpdate) {
-        collectionView.performBatchUpdates {
-            let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
-            let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
-            
-            collectionView.insertItems(at: insertedIndexPaths)
-            collectionView.deleteItems(at: deletedIndexPaths)
-        } completion: { _ in
-            self.collectionView.reloadData()
-        }
     }
 }

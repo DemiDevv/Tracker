@@ -235,7 +235,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
 
         trackerHabbitDelegate?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
         print("Создан новый трекер: \(newTracker)")
-        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+        presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
     private func setupViewsWithoutStackView() {
