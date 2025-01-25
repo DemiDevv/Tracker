@@ -228,7 +228,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         
         trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
         print("Создан новый трекер: \(newTracker)")
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
     func updateCollectionViewHeights() {

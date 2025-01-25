@@ -155,6 +155,9 @@ extension CategoryViewController {
         tableView.separatorStyle = viewModel.numberOfCategories() == 1
             ? .none
             : .singleLine
+        
+        tableView.tableHeaderView = UIView(frame: .zero)
+
     }
     
     // MARK: - createButtonTapAction
@@ -202,11 +205,18 @@ extension CategoryViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row == tableView.numberOfRows(inSection: indexPath.section) - 1 {
+            let path = UIBezierPath(roundedRect: cell.bounds,
+                                            byRoundingCorners: [.bottomLeft, .bottomRight],
+                                            cornerRadii: CGSize(width: 16, height: 16))
+                    let mask = CAShapeLayer()
+                    mask.path = path.cgPath
+                    cell.layer.mask = mask
             // Убираем разделитель для последней ячейки
             cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         } else {
             // Восстанавливаем стандартный разделитель для остальных ячеек
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+            cell.layer.mask = nil
         }
     }
     

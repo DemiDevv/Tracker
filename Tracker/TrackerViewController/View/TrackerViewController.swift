@@ -117,6 +117,9 @@ final class TrackerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        setupTrackerView()
+        setupCollectionView()
+        
         showOnboarding()
         
         NotificationCenter.default.addObserver(
@@ -127,10 +130,7 @@ final class TrackerViewController: UIViewController {
         )
         getAllCategories()
         getCompletedTrackers()
-        
-        setupTrackerView()
         updateUI()
-        setupCollectionView()
     }
     
     // MARK: - Setup UI
@@ -194,14 +194,18 @@ final class TrackerViewController: UIViewController {
     }
     
     private func showOnboarding() {
-        guard !UserAppSettingsStorage.shared.isOnboardingVisited else { return }
-        
+        UserAppSettingsStorage.shared.clean()
+        print("Checking onboarding condition...")
+        guard !UserAppSettingsStorage.shared.isOnboardingVisited else {
+            print("Onboarding already visited")
+            return
+        }
         UserAppSettingsStorage.shared.isOnboardingVisited = true
-        let onboardingVC = OnboardingViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+        let onboardingVC = OnboardingViewController()
         onboardingVC.modalPresentationStyle = .fullScreen
         present(onboardingVC, animated: true)
     }
-    
+
     // MARK: getAllCategories
     private func getAllCategories() {
         categories = trackerCategoryStore.fetchAllCategories()

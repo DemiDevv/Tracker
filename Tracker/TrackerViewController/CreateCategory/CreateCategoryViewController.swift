@@ -9,7 +9,7 @@ final class CreateCategoryViewController: UIViewController {
     private lazy var categoryNameTextField: UITextField = {
         let textField = PaddedTextField()
         textField.clearButtonMode = .whileEditing
-        textField.placeholder = "Введите название трекера"
+        textField.placeholder = "Введите название категории"
         textField.borderStyle = .none
         textField.backgroundColor = .backgroundDayYp
         textField.layer.cornerRadius = 16
