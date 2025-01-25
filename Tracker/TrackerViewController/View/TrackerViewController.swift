@@ -86,13 +86,6 @@ final class TrackerViewController: UIViewController {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         return collectionView
     }()
-    
-//    private var viewModel: TrackerViewModel?
-//    
-//    func initialize(viewModel: TrackerViewModel) {
-//        self.viewModel = viewModel
-//        bind()
-//    }
 
     var categories: [TrackerCategory] = []
     private var filteredCategories: [TrackerCategory] = []
@@ -117,8 +110,7 @@ final class TrackerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        setupTrackerView()
-        setupCollectionView()
+
         
         showOnboarding()
         
@@ -128,8 +120,11 @@ final class TrackerViewController: UIViewController {
             name: .categoryNameChanged,
             object: nil
         )
+        
         getAllCategories()
         getCompletedTrackers()
+        setupTrackerView()
+        setupCollectionView()
         updateUI()
     }
     
@@ -451,6 +446,7 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker) {
         print("🛠 Метод didTapCreateButton вызван с categoryTitle: \(categoryTitle)")
+        getAllCategories()
         guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
             print("⚠️ Категория не найдена: \(categoryTitle)")
             return
@@ -466,6 +462,12 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
             print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }
     }
+//    
+//    func didTapConfirmButton(categoryTitle: String, trackerToAdd: Tracker) {
+//        getAllCategories()
+//        guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else { return }
+//        trackerStore.addNewTracker(trackerToAdd, toCategory: categories[categoryIndex])
+//    }
     
     func didTapCancelButton() {
         dismiss(animated: true)
