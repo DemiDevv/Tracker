@@ -8,6 +8,7 @@ struct TrackerStoreUpdate {
 
 protocol TrackerStoreDelegate: AnyObject {
     func didUpdate(_ update: TrackerStoreUpdate)
+    func didTrackersUpdate()
 }
 
 protocol TrackerStoreProtocol {

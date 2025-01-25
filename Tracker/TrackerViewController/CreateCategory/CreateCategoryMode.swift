@@ -1,8 +1,6 @@
-//
-//  CreateCategoryMode.swift
-//  Tracker
-//
-//  Created by Demain Petropavlov on 24.01.2025.
-//
-
 import Foundation
+
+enum CreateCategoryMode: String {
+    case create = "Новая категория"
+    case edit = "Редактирование категории"
+}

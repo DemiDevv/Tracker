@@ -117,13 +117,14 @@ final class TrackerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didTrackersUpdate),
+            name: .categoryNameChanged,
+            object: nil
+        )
         getAllCategories()
-        // TODO: Mock Data
-        if categories.isEmpty {
-            print("Load Mock Data")
-            trackerCategoryStore.createCategory(with: TrackerCategory(title: "Важное", trackers: []))
-            getAllCategories()
-        }
         getCompletedTrackers()
         
         setupTrackerView()
@@ -453,5 +454,19 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     
     func didTapCancelButton() {
         dismiss(animated: true)
+    }
+}
+
+// MARK: - TrackerStoreDelegate
+
+extension TrackerViewController: TrackerStoreDelegate {
+    func didUpdate(_ update: TrackerStoreUpdate) {
+        //
+    }
+    
+    @objc func didTrackersUpdate() {
+        getAllCategories()
+        getCompletedTrackers()
+        collectionView.reloadData()
     }
 }
