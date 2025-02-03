@@ -153,11 +153,10 @@ extension CreateCategoryViewController {
             
             trackerCategoryStore
                 .updateCategory(
-                    with: TrackerCategory(
-                        title: categoryName,
-                        trackers: editingCategory.trackers
-                    )
+                    previousName: editingCategory.title,
+                    withNewName: categoryName
                 )
+
             
             NotificationCenter.default
                 .post(

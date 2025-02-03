@@ -33,7 +33,7 @@ final class CategoryViewController: UIViewController {
     private lazy var placeHolderView: UIView = PlaceholderView(
         model: PlaceholderModel(
             description: "Привычки и события можно\n объединить по смыслу",
-            imageName: "" //TODO:
+            imageName: "ill_error_image"
         )
     )
     

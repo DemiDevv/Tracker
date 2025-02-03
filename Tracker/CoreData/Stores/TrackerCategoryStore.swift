@@ -17,13 +17,18 @@ final class TrackerCategoryStore {
         self.context = context
     }
 
-    func updateCategory(with data: TrackerCategory) {
-        let category = getCategoryByTitle(data.title)
-        category?.title = data.title
+    func updateCategory(previousName: String, withNewName newName: String) {
+        guard let category = getCategoryByTitle(previousName) else {
+            print("Категория с названием \(previousName) не найдена")
+            return
+        }
+        
+        category.title = newName
+        
         do {
             try context.save()
         } catch {
-            print("Ошибка при создании категории")
+            print("Ошибка при обновлении категории: \(error)")
         }
     }
     

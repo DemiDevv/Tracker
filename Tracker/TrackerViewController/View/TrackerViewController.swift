@@ -110,9 +110,6 @@ final class TrackerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-
-        
-        showOnboarding()
         
         NotificationCenter.default.addObserver(
             self,
@@ -126,6 +123,7 @@ final class TrackerViewController: UIViewController {
         setupTrackerView()
         setupCollectionView()
         updateUI()
+        showOnboarding()
     }
     
     // MARK: - Setup UI
@@ -189,14 +187,12 @@ final class TrackerViewController: UIViewController {
     }
     
     private func showOnboarding() {
+        // TODO: for tests
         UserAppSettingsStorage.shared.clean()
-        print("Checking onboarding condition...")
-        guard !UserAppSettingsStorage.shared.isOnboardingVisited else {
-            print("Onboarding already visited")
-            return
-        }
+        guard !UserAppSettingsStorage.shared.isOnboardingVisited else { return }
+        
         UserAppSettingsStorage.shared.isOnboardingVisited = true
-        let onboardingVC = OnboardingViewController()
+        let onboardingVC = OnboardingViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
         onboardingVC.modalPresentationStyle = .fullScreen
         present(onboardingVC, animated: true)
     }
@@ -462,12 +458,6 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
             print("❌ Ошибка добавления трекера: \(error.localizedDescription)")
         }
     }
-//    
-//    func didTapConfirmButton(categoryTitle: String, trackerToAdd: Tracker) {
-//        getAllCategories()
-//        guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else { return }
-//        trackerStore.addNewTracker(trackerToAdd, toCategory: categories[categoryIndex])
-//    }
     
     func didTapCancelButton() {
         dismiss(animated: true)
