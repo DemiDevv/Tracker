@@ -107,9 +107,19 @@ final class TrackerViewController: UIViewController {
     weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
     
     // MARK: - Lifecycle
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print("TrackerViewController did appear")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        showOnboarding()
+        setupTrackerView()
+        setupCollectionView()
+        updateUI()
+        
         
         NotificationCenter.default.addObserver(
             self,
@@ -120,10 +130,6 @@ final class TrackerViewController: UIViewController {
         
         getAllCategories()
         getCompletedTrackers()
-        setupTrackerView()
-        setupCollectionView()
-        updateUI()
-        showOnboarding()
     }
     
     // MARK: - Setup UI
@@ -187,14 +193,18 @@ final class TrackerViewController: UIViewController {
     }
     
     private func showOnboarding() {
-        // TODO: for tests
-        UserAppSettingsStorage.shared.clean()
-        guard !UserAppSettingsStorage.shared.isOnboardingVisited else { return }
-        
+        guard !UserAppSettingsStorage.shared.isOnboardingVisited else {
+            print("Onboarding already visited, skipping.")
+            return
+        }
+
         UserAppSettingsStorage.shared.isOnboardingVisited = true
-        let onboardingVC = OnboardingViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
-        onboardingVC.modalPresentationStyle = .fullScreen
-        present(onboardingVC, animated: true)
+
+        DispatchQueue.main.async {
+            let onboardingVC = OnboardingViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+            onboardingVC.modalPresentationStyle = .fullScreen
+            self.present(onboardingVC, animated: true)
+        }
     }
 
     // MARK: getAllCategories
@@ -222,12 +232,8 @@ final class TrackerViewController: UIViewController {
     @objc private func addTrackerButtonTapped() {
         let trackerCreateVC = TrackerCreateViewController()
         trackerCreateVC.trackerViewController = self
-        if let navigationController = self.navigationController {
-            navigationController.pushViewController(trackerCreateVC, animated: true)
-        } else {
-            trackerCreateVC.modalPresentationStyle = .pageSheet
-            present(trackerCreateVC, animated: true, completion: nil)
-        }
+        trackerCreateVC.modalPresentationStyle = .pageSheet
+        present(trackerCreateVC, animated: true, completion: nil)
     }
     
     private func setupCollectionView() {

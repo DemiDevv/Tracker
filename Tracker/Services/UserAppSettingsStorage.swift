@@ -1,7 +1,5 @@
 import Foundation
 
-import Foundation
-
 protocol UserAppSettingsStorageProtocol {
     var isOnboardingVisited: Bool { get set }
     func clean()
