@@ -35,6 +35,8 @@ final class PlaceholderView: UIView {
         
         addSubview(descriptionImage)
         addSubview(descriptionLabel)
+        descriptionImage.translatesAutoresizingMaskIntoConstraints = false
+        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             descriptionImage.centerXAnchor.constraint(equalTo: centerXAnchor),

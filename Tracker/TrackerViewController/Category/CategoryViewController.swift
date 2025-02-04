@@ -82,22 +82,23 @@ final class CategoryViewController: UIViewController {
 
 extension CategoryViewController {
     
-    func showPlaceHolder(isVisible: Bool) {
-        placeHolderView.isHidden = !isVisible
-    }
-    
     private func setupLayout() {
-        view.addSubview(tableView)
         view.addSubview(placeHolderView)
+        view.addSubview(tableView)
         view.addSubview(createButton)
         
         placeHolderView.translatesAutoresizingMaskIntoConstraints = false
-        
+        placeHolderView.isHidden = false
+
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-
+            
+            placeHolderView.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+            placeHolderView.widthAnchor.constraint(equalToConstant: 300),
+            placeHolderView.heightAnchor.constraint(equalToConstant: 300),
+            placeHolderView.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -232),
             
             createButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             createButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
@@ -111,11 +112,13 @@ extension CategoryViewController {
     
     private func setupBindings() {
         viewModel.onCategoriesChanged = { [weak self] categories in
-            guard let self else { return }
+            guard let self = self else { return }
             self.tableView.reloadData()
-            self.showPlaceHolder(isVisible: viewModel.numberOfCategories() == 0)
-
+            print("placeHolderView isHidden before update: \(placeHolderView.isHidden)")
+            self.updatePlaceholderVisibility()
+            print("Categories updated, count: \(categories.count)")
         }
+
 
         viewModel.onCategorySelected = { [weak self] category in
             guard let self = self else { return }
@@ -131,8 +134,12 @@ extension CategoryViewController {
     
     // MARK: - showPlaceHolder
     
-    private func showPlaceHolder() {
-        showPlaceHolder(isVisible: viewModel.numberOfCategories() != 0)
+    private func updatePlaceholderVisibility() {
+        let hasCategories = viewModel.numberOfCategories() > 0
+        print("Categories count: \(viewModel.numberOfCategories()), hasCategories: \(hasCategories)")
+        
+        placeHolderView.isHidden = hasCategories
+        tableView.isHidden = !hasCategories
     }
     
     // MARK: - setupButtons
