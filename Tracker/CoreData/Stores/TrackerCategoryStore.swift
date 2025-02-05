@@ -17,6 +17,21 @@ final class TrackerCategoryStore {
         self.context = context
     }
 
+    func updateCategory(previousName: String, withNewName newName: String) {
+        guard let category = getCategoryByTitle(previousName) else {
+            print("Категория с названием \(previousName) не найдена")
+            return
+        }
+        
+        category.title = newName
+        
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при обновлении категории: \(error)")
+        }
+    }
+    
     func createCategory(with category: TrackerCategory) {
         let categoryEntity = TrackerCategoryCoreData(context: context)
         categoryEntity.title = category.title
@@ -61,18 +76,19 @@ final class TrackerCategoryStore {
             return []
         }
     }
-
-    // Удалить категорию по названию
-    func deleteCategory(byTitle title: String) throws {
-        let fetchRequest: NSFetchRequest<TrackerCategoryCoreData> = TrackerCategoryCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "title == %@", title)
-
-        guard let categoryCoreData = try context.fetch(fetchRequest).first else {
-            throw TrackerCategoryStoreError.categoryNotFound
+    
+    func deleteCategory(_ category: TrackerCategory) {
+        guard let categoryToDelete = getCategoryByTitle(category.title) else {
+            return
         }
 
-        context.delete(categoryCoreData)
-        try context.save()
+        context.delete(categoryToDelete)
+        
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка при создании категории")
+        }
     }
 }
 

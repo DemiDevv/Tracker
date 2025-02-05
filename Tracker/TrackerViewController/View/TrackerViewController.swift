@@ -107,22 +107,29 @@ final class TrackerViewController: UIViewController {
     weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
     
     // MARK: - Lifecycle
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        print("TrackerViewController did appear")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        trackerStore.delegate = self
-        getAllCategories()
-        // TODO: Mock Data
-        if categories.isEmpty {
-            print("Load Mock Data")
-            trackerCategoryStore.createCategory(with: TrackerCategory(title: "Важное", trackers: []))
-            getAllCategories()
-        }
-        getCompletedTrackers()
-        
+        showOnboarding()
         setupTrackerView()
-        updateUI()
         setupCollectionView()
+        updateUI()
+        
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(didTrackersUpdate),
+            name: .categoryNameChanged,
+            object: nil
+        )
+        
+        getAllCategories()
+        getCompletedTrackers()
     }
     
     // MARK: - Setup UI
@@ -184,6 +191,22 @@ final class TrackerViewController: UIViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
+    
+    private func showOnboarding() {
+        guard !UserAppSettingsStorage.shared.isOnboardingVisited else {
+            print("Onboarding already visited, skipping.")
+            return
+        }
+
+        UserAppSettingsStorage.shared.isOnboardingVisited = true
+
+        DispatchQueue.main.async {
+            let onboardingVC = OnboardingViewController(transitionStyle: .scroll, navigationOrientation: .horizontal)
+            onboardingVC.modalPresentationStyle = .fullScreen
+            self.present(onboardingVC, animated: true)
+        }
+    }
+
     // MARK: getAllCategories
     private func getAllCategories() {
         categories = trackerCategoryStore.fetchAllCategories()
@@ -209,12 +232,8 @@ final class TrackerViewController: UIViewController {
     @objc private func addTrackerButtonTapped() {
         let trackerCreateVC = TrackerCreateViewController()
         trackerCreateVC.trackerViewController = self
-        if let navigationController = self.navigationController {
-            navigationController.pushViewController(trackerCreateVC, animated: true)
-        } else {
-            trackerCreateVC.modalPresentationStyle = .pageSheet
-            present(trackerCreateVC, animated: true, completion: nil)
-        }
+        trackerCreateVC.modalPresentationStyle = .pageSheet
+        present(trackerCreateVC, animated: true, completion: nil)
     }
     
     private func setupCollectionView() {
@@ -429,6 +448,7 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker) {
         print("🛠 Метод didTapCreateButton вызван с categoryTitle: \(categoryTitle)")
+        getAllCategories()
         guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
             print("⚠️ Категория не найдена: \(categoryTitle)")
             return
@@ -450,16 +470,16 @@ extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     }
 }
 
+// MARK: - TrackerStoreDelegate
+
 extension TrackerViewController: TrackerStoreDelegate {
     func didUpdate(_ update: TrackerStoreUpdate) {
-        collectionView.performBatchUpdates {
-            let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
-            let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
-            
-            collectionView.insertItems(at: insertedIndexPaths)
-            collectionView.deleteItems(at: deletedIndexPaths)
-        } completion: { _ in
-            self.collectionView.reloadData()
-        }
+        //
+    }
+    
+    @objc func didTrackersUpdate() {
+        getAllCategories()
+        getCompletedTrackers()
+        collectionView.reloadData()
     }
 }

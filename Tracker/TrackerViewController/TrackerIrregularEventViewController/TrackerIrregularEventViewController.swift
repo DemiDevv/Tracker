@@ -139,11 +139,11 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         return tapGesture
     }()
     
-    private var categoryTitle: String? = "Важное"
     weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
     private var optionsTableViewTopConstraint: NSLayoutConstraint!
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
+    private var category: TrackerCategory?
     
     // MARK: - View Lifecycle
     
@@ -216,7 +216,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     
     @objc private func didTapCreateButton() {
         guard
-              let categoryTitle,
+              let category = category?.title,
               let title = titleTextField.text, !title.isEmpty,
               let color = selectedColor,
               let emoji = selectedEmoji else { return }
@@ -233,9 +233,9 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
             print("⚠️ Делегат delegate2 не установлен")
         }
 
-        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
         print("Создан новый трекер: \(newTracker)")
-        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+        presentingViewController?.dismiss(animated: true, completion: nil)
     }
 
     private func setupViewsWithoutStackView() {
@@ -370,7 +370,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         cell.textLabel?.text = "Категория"
         cell.accessoryType = .disclosureIndicator
         cell.backgroundColor = .backgroundDayYp
-        cell.detailTextLabel?.text = categoryTitle
+        cell.detailTextLabel?.text = category?.title
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
         cell.detailTextLabel?.textColor = .grayYp
         return cell
@@ -393,11 +393,14 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         
-        if indexPath.row == 1 {
-            let scheduleVC = ScheduleViewController()
-            scheduleVC.modalPresentationStyle = .pageSheet
-            present(scheduleVC, animated: true, completion: nil)
+        if indexPath.row == 0 {
+            let categoryViewController = CategoryViewController(
+                selectedCategory: category,
+                delegate: self
+            )
 
+            let navigationController = UINavigationController(rootViewController: categoryViewController)
+            present(navigationController, animated: true)
         }
     }
     
@@ -507,4 +510,10 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegateFlowLayou
     }
 }
 
-
+extension TrackerIrregularEventViewController: CategoryViewControllerDelegate {
+    func didSelectCategory(_ selectedCategory: TrackerCategory) {
+        print("Selected category: \(selectedCategory.title)")
+        category = selectedCategory
+        optionsTableView.reloadData()
+    }
+}

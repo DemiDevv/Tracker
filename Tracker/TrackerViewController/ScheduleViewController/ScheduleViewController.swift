@@ -112,41 +112,28 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "SwitchCell", for: indexPath) as? SwitchTableViewCell else {
             return UITableViewCell()
         }
-        
-        // Корректируем получение дня недели
+    
         let weekdayIndex = (indexPath.row + 1) % 7 + 1
         guard let weekday = Weekday(rawValue: weekdayIndex) else { return UITableViewCell() }
         
         cell.textLabel?.text = daysOfWeek[indexPath.row]
-        
-        // Присваиваем tag переключателю с учетом исправленного weekdayIndex
         cell.switchControl.tag = weekday.rawValue
         cell.switchControl.addTarget(self, action: #selector(didChangeSwitch(_:)), for: .valueChanged)
-        
-        // Устанавливаем состояние переключателя в зависимости от того, выбран ли день
         cell.switchControl.isOn = selectedDays.contains(weekday)
-        
-        // Убираем выделение ячейки
         cell.selectionStyle = .none
-        
-        // Задаем фон ячейки (красный цвет)
         cell.backgroundColor = .backgroundDayYp
-        
         
         return cell
     }
 
     @objc private func didChangeSwitch(_ sender: UISwitch) {
-        // Корректируем получение дня недели из tag переключателя
         guard let day = Weekday(rawValue: sender.tag) else {
             return
         }
         
-        // Если переключатель включен, добавляем день в выбранные
         if sender.isOn {
             selectedDays.insert(day)
         } else {
-            // Если выключен, убираем день из выбранных
             selectedDays.remove(day)
         }
     }

@@ -1,6 +1,8 @@
 import UIKit
 
 final class TabBarController: UITabBarController {
+    
+    weak var onboardingViewController: OnboardingViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()

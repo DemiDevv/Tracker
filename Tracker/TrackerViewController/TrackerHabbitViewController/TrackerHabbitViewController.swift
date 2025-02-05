@@ -149,8 +149,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         self.view.addGestureRecognizer(tapGesture)
         return tapGesture
     }()
-    
-    private var categoryTitle: String? = "Важное"
+    private var category: TrackerCategory?
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
@@ -209,7 +208,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     @objc private func didTapCreateButton() {
         print("Selected schedule: \(selectedSchedule)")
         guard
-            let categoryTitle,
+            let category = category?.title,
             let title = titleTextField.text, !title.isEmpty,
             let color = selectedColor,
             let emoji = selectedEmoji,
@@ -227,7 +226,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             print("⚠️ Делегат delegate2 не установлен")
         }
         
-        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: categoryTitle, trackerToAdd: newTracker)
+        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
         print("Создан новый трекер: \(newTracker)")
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -252,6 +251,8 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         scheduleVC.delegate = self
         present(scheduleVC, animated: true, completion: nil)
     }
+    
+    
     
     private func selectedScheduleString() -> String {
         guard !selectedSchedule.isEmpty else { return "" }
@@ -405,7 +406,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         
         if indexPath.row == 0 {
             cell.textLabel?.text = "Категория"
-            cell.detailTextLabel?.text = categoryTitle
+            cell.detailTextLabel?.text = category?.title
             cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
             cell.detailTextLabel?.textColor = .grayYp
         } else if indexPath.row == 1 {
@@ -444,6 +445,16 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         if indexPath.row == 1 {
             titleTextField.resignFirstResponder()
             presentScheduleViewController()
+        }
+        
+        else {
+            let categoryViewController = CategoryViewController(
+                selectedCategory: category,
+                delegate: self
+            )
+
+            let navigationController = UINavigationController(rootViewController: categoryViewController)
+            present(navigationController, animated: true)
         }
     }
     
@@ -556,6 +567,14 @@ extension TrackerHabbitViewController: ScheduleViewControllerDelegate {
     func didSelectSchedule(_ selectedDays: [Weekday]) {
         print("Selected days: \(selectedDays)")  // Печать для проверки
         selectedSchedule = selectedDays
+        optionsTableView.reloadData()
+    }
+}
+
+extension TrackerHabbitViewController: CategoryViewControllerDelegate {
+    func didSelectCategory(_ selectedCategory: TrackerCategory) {
+        print("Selected category: \(selectedCategory.title)")
+        category = selectedCategory
         optionsTableView.reloadData()
     }
 }
