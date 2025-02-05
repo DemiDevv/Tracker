@@ -174,7 +174,7 @@ extension CreateCategoryViewController {
     
     @objc private func editingChanged(_ sender: UITextField) {
         guard let text = sender.text else { return }
-        let errorIsHidden = text.count < 38
+        let errorIsHidden = text.count < Constants.nameLengthRestriction
         showTrackerNameError(errorIsHidden)
         let isDoneButtonHidden = !text.isEmpty && errorIsHidden
         doDoneButtonActive(isDoneButtonHidden)
@@ -191,6 +191,3 @@ extension CreateCategoryViewController: UITextFieldDelegate {
     }
 }
 
-extension Notification.Name {
-    static let categoryNameChanged = Notification.Name("CategoryNameChanged")
-}

@@ -8,7 +8,7 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - Properties
     
-    lazy var tableView: UITableView = {
+    private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true  // Закругление углов таблицы
@@ -18,7 +18,7 @@ final class CategoryViewController: UIViewController {
         return tableView
     }()
     
-    lazy var createButton: UIButton = {
+    private lazy var createButton: UIButton = {
         let button = UIButton()
         button.setTitle("Добавить категорию", for: .normal)
         button.backgroundColor = .blackDayYp
@@ -135,8 +135,8 @@ extension CategoryViewController {
     // MARK: - showPlaceHolder
     
     private func updatePlaceholderVisibility() {
-        let hasCategories = viewModel.numberOfCategories() > 0
-        print("Categories count: \(viewModel.numberOfCategories()), hasCategories: \(hasCategories)")
+        let hasCategories = viewModel.categoriesAmount > 0
+        print("Categories count: \(viewModel.categoriesAmount), hasCategories: \(hasCategories)")
         
         placeHolderView.isHidden = hasCategories
         tableView.isHidden = !hasCategories
@@ -159,7 +159,7 @@ extension CategoryViewController {
             forCellReuseIdentifier: CategoryTableViewCell.identifier
         )
         
-        tableView.separatorStyle = viewModel.numberOfCategories() == 1
+        tableView.separatorStyle = viewModel.categoriesAmount == 1
             ? .none
             : .singleLine
         
@@ -252,7 +252,7 @@ extension CategoryViewController: UITableViewDelegate {
         contextMenuConfigurationForRowAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        let category = viewModel.categoryBy(index: indexPath.row)
+        let category = viewModel.getCategoryBy(index: indexPath.row)
         
         return UIContextMenuConfiguration(actionProvider:  { _ in
             UIMenu(children: [
@@ -274,7 +274,7 @@ extension CategoryViewController: UITableViewDelegate {
 extension CategoryViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.numberOfCategories()
+        viewModel.categoriesAmount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -287,7 +287,7 @@ extension CategoryViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let category = viewModel.categoryBy(index: indexPath.row)
+        let category = viewModel.getCategoryBy(index: indexPath.row)
         let isSelected = category.title == selectedCategory?.title
         
         if isSelected {

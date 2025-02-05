@@ -40,15 +40,11 @@ extension CategoryTableViewCell {
     // MARK: - Layout
     
     private func setupLayout() {
-        [nameLabel].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            labelsStack.addArrangedSubview($0)
-        }
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+        labelsStack.addArrangedSubview(nameLabel)
         
-        [labelsStack].forEach{
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            contentView.addSubview($0)
-        }
+        labelsStack.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(labelsStack)
 
         NSLayoutConstraint.activate([
             labelsStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 15),
