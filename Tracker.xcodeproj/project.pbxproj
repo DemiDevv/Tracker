@@ -39,6 +39,7 @@
 		304E7A312C87589900F55F68 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A302C87589900F55F68 /* TabBarController.swift */; };
 		304E7A342C8759E200F55F68 /* TrackerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A332C8759E200F55F68 /* TrackerViewController.swift */; };
 		304E7A372C875A0E00F55F68 /* StatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A362C875A0E00F55F68 /* StatViewController.swift */; };
+		305F7F502D63AF85001DDC88 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F4F2D63AF85001DDC88 /* Colors.swift */; };
 		307C75892D44E75400724D84 /* UserAppSettingsStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307C75882D44E75400724D84 /* UserAppSettingsStorage.swift */; };
 		30863AAF2CF7788300987F29 /* DaysValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */; };
 		30863AB22CF7794200987F29 /* UIColorMarshalling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB12CF7794200987F29 /* UIColorMarshalling.swift */; };
@@ -92,6 +93,7 @@
 		304E7A302C87589900F55F68 /* TabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		304E7A332C8759E200F55F68 /* TrackerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerViewController.swift; sourceTree = "<group>"; };
 		304E7A362C875A0E00F55F68 /* StatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatViewController.swift; sourceTree = "<group>"; };
+		305F7F4F2D63AF85001DDC88 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		307C75882D44E75400724D84 /* UserAppSettingsStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAppSettingsStorage.swift; sourceTree = "<group>"; };
 		30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysValueTransformer.swift; sourceTree = "<group>"; };
 		30863AB12CF7794200987F29 /* UIColorMarshalling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorMarshalling.swift; sourceTree = "<group>"; };
@@ -250,6 +252,7 @@
 		304E7A322C8759CD00F55F68 /* TrackerViewController */ = {
 			isa = PBXGroup;
 			children = (
+				305F7F4E2D63AF78001DDC88 /* Colors */,
 				30D8F3332CCFE69200B2986D /* View */,
 				303EA4232CEE554E003B170C /* Model */,
 				303BD3532D43C0D4009E8236 /* Category */,
@@ -270,6 +273,14 @@
 			path = StatViewController;
 			sourceTree = "<group>";
 		};
+		305F7F4E2D63AF78001DDC88 /* Colors */ = {
+			isa = PBXGroup;
+			children = (
+				305F7F4F2D63AF85001DDC88 /* Colors.swift */,
+			);
+			path = Colors;
+			sourceTree = "<group>";
+		};
 		307C75872D44E73C00724D84 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -284,10 +295,10 @@
 				304E7A1D2C8621B000F55F68 /* SceneDelegate.swift */,
 				304E7A1B2C8621B000F55F68 /* AppDelegate.swift */,
 				3031867C2D0D785200CB64A8 /* Constants.swift */,
+				30477F902D536A5900960296 /* AccessibilityIdentifiers.swift */,
 				304E7A242C8621B100F55F68 /* Assets.xcassets */,
 				304E7A262C8621B100F55F68 /* LaunchScreen.storyboard */,
 				304E7A292C8621B100F55F68 /* Info.plist */,
-				30477F902D536A5900960296 /* AccessibilityIdentifiers.swift */,
 			);
 			path = SystemFiles;
 			sourceTree = "<group>";
@@ -449,6 +460,7 @@
 				3049A0712D0211B300160890 /* StoreErrors.swift in Sources */,
 				30863ABE2CF9FC5E00987F29 /* TrackerRecordStore.swift in Sources */,
 				303EA4292CEE55C6003B170C /* TrackerRecord.swift in Sources */,
+				305F7F502D63AF85001DDC88 /* Colors.swift in Sources */,
 				303EA42D2CEE560F003B170C /* Weekday.swift in Sources */,
 				303BD3552D43C0F9009E8236 /* CategoryViewController.swift in Sources */,
 				30412E452D520141002FE4DE /* AppColorSettings.swift in Sources */,
