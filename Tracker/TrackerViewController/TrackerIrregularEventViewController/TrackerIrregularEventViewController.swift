@@ -227,7 +227,8 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
             color: color,
             emoji: emoji,
             schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday],
-            type: .event
+            type: .event,
+            isPinned: false
         )
         if trackerHabbitDelegate == nil {
             print("⚠️ Делегат delegate2 не установлен")

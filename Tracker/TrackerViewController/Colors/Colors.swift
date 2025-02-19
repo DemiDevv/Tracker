@@ -1,7 +1,7 @@
 import UIKit
 
-final class Colors {
-    let viewBackground = UIColor { (traits: UITraitCollection) -> UIColor in
+enum Colors {
+    static let viewBackground = UIColor { (traits: UITraitCollection) -> UIColor in
         if traits.userInterfaceStyle == .light {
             return UIColor.blackNightYp
         } else {
@@ -9,7 +9,15 @@ final class Colors {
         }
     }
     
-    let buttonDisabledColor = UIColor { (traits: UITraitCollection) -> UIColor in
+    static let fontColor = UIColor { (traits: UITraitCollection) -> UIColor in
+        if traits.userInterfaceStyle == .light {
+            return UIColor.blackDayYp
+        } else {
+            return UIColor.blackNightYp
+        }
+    }
+    
+    static let buttonDisabledColor = UIColor { (traits: UITraitCollection) -> UIColor in
         if traits.userInterfaceStyle == .light {
             return UIColor.blackDayYp
         } else {
@@ -17,7 +25,7 @@ final class Colors {
         }
     }
     
-    let tableCellColor = UIColor { (traits: UITraitCollection) -> UIColor in
+    static let tableCellColor = UIColor { (traits: UITraitCollection) -> UIColor in
         if traits.userInterfaceStyle == .light {
             return UIColor.backgroundDayYp
         } else {

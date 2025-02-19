@@ -7,7 +7,7 @@ final class TrackerCreateViewController: UIViewController {
         let label = UILabel()
         label.text = "Создание трекера"
         label.font = .systemFont(ofSize: 16)
-        label.tintColor = .black
+        label.tintColor = Colors.fontColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -15,11 +15,12 @@ final class TrackerCreateViewController: UIViewController {
     private lazy var addHabitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Привычка", for: .normal)
-        button.tintColor = .black
+        button.tintColor = Colors.buttonDisabledColor
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .black
+        button.backgroundColor = Colors.buttonDisabledColor
         button.layer.cornerRadius = 16
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.titleLabel?.tintColor = Colors.viewBackground
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didHabitButtonTap), for: .touchUpInside)
         return button
@@ -28,11 +29,12 @@ final class TrackerCreateViewController: UIViewController {
     private lazy var addIrregEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Нерегулярное событие", for: .normal)
-        button.tintColor = .black
+        button.tintColor = Colors.buttonDisabledColor
         button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .black
+        button.backgroundColor = Colors.buttonDisabledColor
         button.layer.cornerRadius = 16
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.titleLabel?.tintColor = Colors.viewBackground
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didIrregEventButtonTap), for: .touchUpInside)
         return button
@@ -41,7 +43,7 @@ final class TrackerCreateViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         
         setupTrackerView()
     }

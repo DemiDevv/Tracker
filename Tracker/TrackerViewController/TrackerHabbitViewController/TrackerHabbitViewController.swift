@@ -25,6 +25,22 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         return label
     }()
     
+    private lazy var daysCountLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.isHidden = true
+        return label
+    }()
+    
+    private lazy var headerStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 40
+        return stackView
+    }()
+    
     private lazy var titleTextField: UITextField = {
         let textField = PaddedTextField()
         textField.clearButtonMode = .whileEditing
@@ -220,7 +236,8 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             color: color,
             emoji: emoji,
             schedule: selectedSchedule,
-            type: .habbit
+            type: .habbit,
+            isPinned: false
         )
         if trackerHabbitDelegate == nil {
             print("⚠️ Делегат delegate2 не установлен")

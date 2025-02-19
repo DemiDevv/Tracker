@@ -43,7 +43,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
     private lazy var daysLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.textColor = .black
+        label.textColor = Colors.fontColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -53,11 +53,11 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         let pointSize = UIImage.SymbolConfiguration(pointSize: 11)
         let image = UIImage(systemName: "plus", withConfiguration: pointSize)
         let button = UIButton()
-        button.backgroundColor = .white
+        button.backgroundColor = Colors.fontColor
         button.translatesAutoresizingMaskIntoConstraints = false
         button.layer.cornerRadius = 17
         button.layer.masksToBounds = true
-        button.tintColor = .white
+        button.tintColor = Colors.viewBackground
         button.addTarget(self, action: #selector(addButtonTapped), for: .touchUpInside)
         return button
     }()
@@ -66,6 +66,15 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         let pointSize = UIImage.SymbolConfiguration(pointSize: 11)
         let image = UIImage(systemName: "plus", withConfiguration: pointSize) ?? UIImage()
         return image
+    }()
+    
+    private lazy var pinnedImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.tintColor = .white
+        imageView.image = UIImage(named: "pin_fill")
+        imageView.isHidden = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
     }()
     
     private lazy var completedImage = UIImage(named: "completed_image")
@@ -85,6 +94,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(colorView)
         colorView.addSubview(emojiLabel)
         colorView.addSubview(titleLabel)
+        colorView.addSubview(pinnedImageView)
         contentView.addSubview(daysLabel)
         contentView.addSubview(addButton)
         
@@ -109,6 +119,11 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
             emojiLabel.leadingAnchor.constraint(equalTo: colorView.leadingAnchor, constant: 10),
             emojiLabel.widthAnchor.constraint(equalToConstant: 24),
             emojiLabel.heightAnchor.constraint(equalToConstant: 24),
+            
+            pinnedImageView.heightAnchor.constraint(equalToConstant: 24),
+            pinnedImageView.widthAnchor.constraint(equalToConstant: 24),
+            pinnedImageView.trailingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: -4),
+            pinnedImageView.topAnchor.constraint(equalTo: colorView.topAnchor, constant: 12),
             
             // Название трекера
             titleLabel.centerXAnchor.constraint(equalTo: colorView.centerXAnchor),
@@ -154,8 +169,6 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
             delegate?.completeTracker(id: trackerID, at: indexPath)
         }
     }
-
-    
     
     func configure(
         with tracker: Tracker,
@@ -171,6 +184,7 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
         titleLabel.text = tracker.title
         colorView.backgroundColor = tracker.color
         addButton.backgroundColor = tracker.color
+        pinnedImageView.isHidden = !tracker.isPinned
         
         // Обновление фона кнопки в зависимости от статуса выполнения
         if isCompletedToday {

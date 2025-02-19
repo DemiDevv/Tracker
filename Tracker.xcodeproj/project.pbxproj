@@ -254,13 +254,13 @@
 			children = (
 				305F7F4E2D63AF78001DDC88 /* Colors */,
 				30D8F3332CCFE69200B2986D /* View */,
+				30B13E702CA5514A00386389 /* TrackerCreateView */,
 				303EA4232CEE554E003B170C /* Model */,
 				303BD3532D43C0D4009E8236 /* Category */,
 				303BD35B2D43C157009E8236 /* CreateCategory */,
 				30D8F32D2CC9567C00B2986D /* ScheduleViewController */,
 				30F88C222CB6F04700A84469 /* TrackerHabbitViewController */,
 				30F88C1F2CB55FB100A84469 /* TrackerIrregularEventViewController */,
-				30B13E702CA5514A00386389 /* TrackerCreateView */,
 			);
 			path = TrackerViewController;
 			sourceTree = "<group>";
