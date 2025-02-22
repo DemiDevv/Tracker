@@ -10,4 +10,6 @@ enum Constants {
     ]
     
     static let nameLengthRestriction: Int = 38
+    
+    static let AppMetricaKey = "9cfd4c0c-fec5-48bc-9bee-0f5cea9cc02a"
 }
