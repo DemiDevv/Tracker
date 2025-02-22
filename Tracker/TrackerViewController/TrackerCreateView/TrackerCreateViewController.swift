@@ -16,11 +16,10 @@ final class TrackerCreateViewController: UIViewController {
         let button = UIButton(type: .system)
         button.setTitle("Привычка", for: .normal)
         button.tintColor = Colors.buttonDisabledColor
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(Colors.viewBackground, for: .normal)
         button.backgroundColor = Colors.buttonDisabledColor
         button.layer.cornerRadius = 16
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.titleLabel?.tintColor = Colors.viewBackground
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didHabitButtonTap), for: .touchUpInside)
         return button
@@ -29,12 +28,10 @@ final class TrackerCreateViewController: UIViewController {
     private lazy var addIrregEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Нерегулярное событие", for: .normal)
-        button.tintColor = Colors.buttonDisabledColor
-        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(Colors.viewBackground, for: .normal)
         button.backgroundColor = Colors.buttonDisabledColor
         button.layer.cornerRadius = 16
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.titleLabel?.tintColor = Colors.viewBackground
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didIrregEventButtonTap), for: .touchUpInside)
         return button

@@ -40,6 +40,11 @@
 		304E7A342C8759E200F55F68 /* TrackerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A332C8759E200F55F68 /* TrackerViewController.swift */; };
 		304E7A372C875A0E00F55F68 /* StatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304E7A362C875A0E00F55F68 /* StatViewController.swift */; };
 		305F7F502D63AF85001DDC88 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F4F2D63AF85001DDC88 /* Colors.swift */; };
+		305F7F522D68EB9D001DDC88 /* UIDatePiceker+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F512D68EB9D001DDC88 /* UIDatePiceker+Extensions.swift */; };
+		305F7F552D6A0738001DDC88 /* FilterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F542D6A0738001DDC88 /* FilterViewController.swift */; };
+		305F7F582D6A0782001DDC88 /* FilterType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F572D6A0782001DDC88 /* FilterType.swift */; };
+		305F7F5A2D6A0895001DDC88 /* UITableView+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F592D6A0895001DDC88 /* UITableView+Extension.swift */; };
+		305F7F5C2D6A0BD6001DDC88 /* UITableViewCell+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 305F7F5B2D6A0BD6001DDC88 /* UITableViewCell+Extension.swift */; };
 		307C75892D44E75400724D84 /* UserAppSettingsStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 307C75882D44E75400724D84 /* UserAppSettingsStorage.swift */; };
 		30863AAF2CF7788300987F29 /* DaysValueTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */; };
 		30863AB22CF7794200987F29 /* UIColorMarshalling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30863AB12CF7794200987F29 /* UIColorMarshalling.swift */; };
@@ -94,6 +99,11 @@
 		304E7A332C8759E200F55F68 /* TrackerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackerViewController.swift; sourceTree = "<group>"; };
 		304E7A362C875A0E00F55F68 /* StatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatViewController.swift; sourceTree = "<group>"; };
 		305F7F4F2D63AF85001DDC88 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		305F7F512D68EB9D001DDC88 /* UIDatePiceker+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIDatePiceker+Extensions.swift"; sourceTree = "<group>"; };
+		305F7F542D6A0738001DDC88 /* FilterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterViewController.swift; sourceTree = "<group>"; };
+		305F7F572D6A0782001DDC88 /* FilterType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterType.swift; sourceTree = "<group>"; };
+		305F7F592D6A0895001DDC88 /* UITableView+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableView+Extension.swift"; sourceTree = "<group>"; };
+		305F7F5B2D6A0BD6001DDC88 /* UITableViewCell+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITableViewCell+Extension.swift"; sourceTree = "<group>"; };
 		307C75882D44E75400724D84 /* UserAppSettingsStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserAppSettingsStorage.swift; sourceTree = "<group>"; };
 		30863AAE2CF7788200987F29 /* DaysValueTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysValueTransformer.swift; sourceTree = "<group>"; };
 		30863AB12CF7794200987F29 /* UIColorMarshalling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorMarshalling.swift; sourceTree = "<group>"; };
@@ -193,6 +203,9 @@
 			children = (
 				30412E472D5201C4002FE4DE /* UIColor+Extensions.swift */,
 				30477F922D536AAE00960296 /* Notification+Extensions.swift */,
+				305F7F512D68EB9D001DDC88 /* UIDatePiceker+Extensions.swift */,
+				305F7F592D6A0895001DDC88 /* UITableView+Extension.swift */,
+				305F7F5B2D6A0BD6001DDC88 /* UITableViewCell+Extension.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -234,9 +247,9 @@
 				303BD3622D43C2F4009E8236 /* Alert */,
 				3099CD472D1D7152002D610C /* Onboarding */,
 				3049A06F2D020EF000160890 /* CoreData */,
-				307C758A2D44E7FC00724D84 /* SystemFiles */,
 				30412E462D52019E002FE4DE /* Extensions */,
 				30412E432D52012B002FE4DE /* AppSettings */,
+				307C758A2D44E7FC00724D84 /* SystemFiles */,
 			);
 			path = Tracker;
 			sourceTree = "<group>";
@@ -252,6 +265,7 @@
 		304E7A322C8759CD00F55F68 /* TrackerViewController */ = {
 			isa = PBXGroup;
 			children = (
+				305F7F532D6A071E001DDC88 /* FilterViewController */,
 				305F7F4E2D63AF78001DDC88 /* Colors */,
 				30D8F3332CCFE69200B2986D /* View */,
 				30B13E702CA5514A00386389 /* TrackerCreateView */,
@@ -279,6 +293,23 @@
 				305F7F4F2D63AF85001DDC88 /* Colors.swift */,
 			);
 			path = Colors;
+			sourceTree = "<group>";
+		};
+		305F7F532D6A071E001DDC88 /* FilterViewController */ = {
+			isa = PBXGroup;
+			children = (
+				305F7F542D6A0738001DDC88 /* FilterViewController.swift */,
+				305F7F562D6A076E001DDC88 /* Models */,
+			);
+			path = FilterViewController;
+			sourceTree = "<group>";
+		};
+		305F7F562D6A076E001DDC88 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				305F7F572D6A0782001DDC88 /* FilterType.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		307C75872D44E73C00724D84 /* Services */ = {
@@ -453,9 +484,12 @@
 				30D8F32F2CC9568600B2986D /* ScheduleViewController.swift in Sources */,
 				3099CD492D1D719A002D610C /* OnboardingViewController.swift in Sources */,
 				303EA4222CEBC87D003B170C /* PaddedTextField.swift in Sources */,
+				305F7F5C2D6A0BD6001DDC88 /* UITableViewCell+Extension.swift in Sources */,
+				305F7F522D68EB9D001DDC88 /* UIDatePiceker+Extensions.swift in Sources */,
 				30F88C212CB5603600A84469 /* TrackerIrregularEventViewController.swift in Sources */,
 				304E7A342C8759E200F55F68 /* TrackerViewController.swift in Sources */,
 				303BD3572D43C109009E8236 /* CategoryViewModel.swift in Sources */,
+				305F7F552D6A0738001DDC88 /* FilterViewController.swift in Sources */,
 				303EA4252CEE5566003B170C /* Tracker.swift in Sources */,
 				3049A0712D0211B300160890 /* StoreErrors.swift in Sources */,
 				30863ABE2CF9FC5E00987F29 /* TrackerRecordStore.swift in Sources */,
@@ -463,6 +497,7 @@
 				305F7F502D63AF85001DDC88 /* Colors.swift in Sources */,
 				303EA42D2CEE560F003B170C /* Weekday.swift in Sources */,
 				303BD3552D43C0F9009E8236 /* CategoryViewController.swift in Sources */,
+				305F7F582D6A0782001DDC88 /* FilterType.swift in Sources */,
 				30412E452D520141002FE4DE /* AppColorSettings.swift in Sources */,
 				30412E3E2D51FFA1002FE4DE /* OnboardingPageViewController.swift in Sources */,
 				30B13E722CA5517100386389 /* TrackerCreateViewController.swift in Sources */,
@@ -470,6 +505,7 @@
 				3031867D2D0D785200CB64A8 /* Constants.swift in Sources */,
 				303BD3642D43C319009E8236 /* AlertPresenter.swift in Sources */,
 				30477F932D536AAE00960296 /* Notification+Extensions.swift in Sources */,
+				305F7F5A2D6A0895001DDC88 /* UITableView+Extension.swift in Sources */,
 				303BD3662D43C330009E8236 /* AlertModel.swift in Sources */,
 				30412E482D5201C4002FE4DE /* UIColor+Extensions.swift in Sources */,
 				303BD36B2D43C89C009E8236 /* PlaceholderModel.swift in Sources */,

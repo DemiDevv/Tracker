@@ -11,7 +11,7 @@ final class CreateCategoryViewController: UIViewController {
         textField.clearButtonMode = .whileEditing
         textField.placeholder = "Введите название категории"
         textField.borderStyle = .none
-        textField.backgroundColor = .backgroundDayYp
+        textField.backgroundColor = Colors.tableCellColor
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
         textField.leftViewMode = .always
@@ -24,6 +24,7 @@ final class CreateCategoryViewController: UIViewController {
         button.setTitle("Готово", for: .normal)
         button.backgroundColor = .systemGray
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.setTitleColor(.white, for: .normal)
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.isEnabled = false
@@ -76,7 +77,7 @@ final class CreateCategoryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         setupLayout()
         setupButtons()
         setupTextField()
@@ -114,7 +115,7 @@ extension CreateCategoryViewController {
     func doDoneButtonActive(_ isEnabled: Bool) {
         doneButton.isEnabled = isEnabled
         doneButton.backgroundColor = isEnabled
-        ? .blackDayYp
+        ? Colors.viewBackground
         : .systemGray
     }
     
@@ -174,10 +175,19 @@ extension CreateCategoryViewController {
     
     @objc private func editingChanged(_ sender: UITextField) {
         guard let text = sender.text else { return }
-        let errorIsHidden = text.count < Constants.nameLengthRestriction
-        showTrackerNameError(errorIsHidden)
-        let isDoneButtonHidden = !text.isEmpty && errorIsHidden
-        doDoneButtonActive(isDoneButtonHidden)
+
+        let isTextValid = text.count < Constants.nameLengthRestriction
+        let isDoneButtonEnabled = !text.isEmpty && isTextValid
+
+        showTrackerNameError(isTextValid)
+        updateDoneButtonState(isEnabled: isDoneButtonEnabled)
+    }
+
+    // Обновление состояния кнопки с учетом темы
+    private func updateDoneButtonState(isEnabled: Bool) {
+        doneButton.isEnabled = isEnabled
+        doneButton.backgroundColor = isEnabled ? Colors.fontColor : .systemGray
+        doneButton.setTitleColor(isEnabled ? Colors.viewBackground : .white, for: .normal)
     }
 }
 

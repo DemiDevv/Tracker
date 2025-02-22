@@ -15,14 +15,16 @@ final class CategoryViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.separatorInset = .zero  // Убираем внутренние отступы для разделителей
         tableView.separatorColor = .lightGray  // Цвет разделителей
+        tableView.backgroundColor = Colors.viewBackground
         return tableView
     }()
     
     private lazy var createButton: UIButton = {
         let button = UIButton()
         button.setTitle("Добавить категорию", for: .normal)
-        button.backgroundColor = .blackDayYp
+        button.backgroundColor = Colors.buttonDisabledColor
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.setTitleColor(Colors.viewBackground, for: .normal)
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -67,7 +69,7 @@ final class CategoryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         
         setupLayout()
         setupButtons()
@@ -225,6 +227,7 @@ extension CategoryViewController: UITableViewDelegate {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
             cell.layer.mask = nil
         }
+        cell.backgroundColor = Colors.tableCellColor
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

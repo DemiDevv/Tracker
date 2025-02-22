@@ -15,6 +15,7 @@ final class UserAppSettingsStorage: UserAppSettingsStorageProtocol {
     
     private enum Keys: String {
         case isOnBoardingVisited
+        case selectedFilter
     }
     
     var isOnboardingVisited: Bool {
@@ -23,6 +24,19 @@ final class UserAppSettingsStorage: UserAppSettingsStorageProtocol {
         }
         set {
             userDefaults.set(newValue, forKey: Keys.isOnBoardingVisited.rawValue)
+        }
+    }
+    
+    var selectedFilter: FilterType? {
+        get {
+            guard let selectedFilter = userDefaults.string(forKey: Keys.selectedFilter.rawValue) else {
+                return nil
+            }
+            
+            return FilterType(rawValue: selectedFilter)
+        }
+        set {
+            userDefaults.set(newValue?.rawValue, forKey: Keys.selectedFilter.rawValue)
         }
     }
     

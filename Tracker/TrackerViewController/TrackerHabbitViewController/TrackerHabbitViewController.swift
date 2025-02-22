@@ -20,7 +20,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         let label = UILabel()
         label.text = "Новая привычка"
         label.font = .systemFont(ofSize: 16)
-        label.tintColor = .black
+        label.tintColor = Colors.fontColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -46,7 +46,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         textField.clearButtonMode = .whileEditing
         textField.placeholder = "Введите название трекера"
         textField.borderStyle = .none
-        textField.backgroundColor = .backgroundDayYp
+        textField.backgroundColor = Colors.tableCellColor
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
         textField.leftViewMode = .always
@@ -73,7 +73,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true  // Закругление углов таблицы
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = Colors.tableCellColor
         tableView.separatorInset = .zero  // Убираем внутренние отступы для разделителей
         tableView.separatorColor = .lightGray  // Цвет разделителей
         return tableView
@@ -84,16 +84,18 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         emojiLabel.text = "Emoji"
         emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        emojiLabel.tintColor = Colors.fontColor
         return emojiLabel
         
     }()
     
     private lazy var colorLabel: UILabel = {
-        let emojiLabel = UILabel()
-        emojiLabel.text = "Цвет"
-        emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
-        return emojiLabel
+        let colorLabel = UILabel()
+        colorLabel.text = "Цвет"
+        colorLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        colorLabel.translatesAutoresizingMaskIntoConstraints = false
+        colorLabel.tintColor = Colors.fontColor
+        return colorLabel
         
     }()
     
@@ -103,6 +105,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = Colors.viewBackground
         return collectionView
     }()
     
@@ -112,6 +115,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = Colors.viewBackground
         return collectionView
     }()
     
@@ -170,7 +174,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         view.addGestureRecognizer(tapGesture)
         optionsTableView.dataSource = self
         optionsTableView.delegate = self
@@ -193,23 +197,23 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     
     @objc private func textFieldDidChange() {
         guard let text = titleTextField.text else { return }
-        
-        if text.count > 38 {
-            maxLengthLabel.isHidden = false
-            createButton.isEnabled = false
+
+        let isTextEmpty = text.isEmpty
+        let isOverLimit = text.count > 38
+
+        maxLengthLabel.isHidden = !isOverLimit
+        createButton.isEnabled = !isTextEmpty && !isOverLimit
+
+        if isOverLimit || isTextEmpty {
             createButton.backgroundColor = .grayYp
-            
-            // Меняем отступ на 32, если лейбл виден
-            optionsTableViewTopConstraint?.constant = 62
+            createButton.setTitleColor(.white, for: .normal)
         } else {
-            maxLengthLabel.isHidden = true
-            createButton.isEnabled = !text.isEmpty
-            createButton.backgroundColor = text.isEmpty ? .grayYp : .blackDayYp
-            
-            // Меняем отступ на 24, если лейбл скрыт
-            optionsTableViewTopConstraint?.constant = 24
+            createButton.backgroundColor = Colors.buttonDisabledColor
+            createButton.setTitleColor(Colors.viewBackground, for: .normal)
         }
-        
+
+        optionsTableViewTopConstraint?.constant = isOverLimit ? 62 : 24
+
         // Анимируем изменение отступа
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
@@ -435,7 +439,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         }
         
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = .backgroundDayYp
+        cell.backgroundColor = Colors.tableCellColor
         return cell
     }
     
@@ -533,20 +537,18 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
-        cell.titleLabel.backgroundColor = .lightGrayYp
+        cell.isSelected = true
         
         if collectionView == emojiCollectionView {
             selectedEmoji = Constants.emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
             selectedColor = Constants.colors[indexPath.row]
-            cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell
-        cell?.titleLabel.backgroundColor = .white
-        cell?.colorView.layer.borderColor = UIColor.white.cgColor
+        guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
+        cell.isSelected = false
     }
 }
 

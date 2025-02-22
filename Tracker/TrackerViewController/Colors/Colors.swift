@@ -17,6 +17,14 @@ enum Colors {
         }
     }
     
+    static let hightlightCell = UIColor { (traits: UITraitCollection) -> UIColor in
+        if traits.userInterfaceStyle == .light {
+            return UIColor.backgroundDayYp
+        } else {
+            return UIColor.whiteYp
+        }
+    }
+    
     static let buttonDisabledColor = UIColor { (traits: UITraitCollection) -> UIColor in
         if traits.userInterfaceStyle == .light {
             return UIColor.blackDayYp
@@ -30,6 +38,14 @@ enum Colors {
             return UIColor.backgroundDayYp
         } else {
             return UIColor.backgroundNightYp
+        }
+    }
+    
+    static let datePickerColor = UIColor { (traits: UITraitCollection) -> UIColor in
+        if traits.userInterfaceStyle == .light {
+            return UIColor.backgroundDayYp
+        } else {
+            return UIColor.whiteYp
         }
     }
 }
