@@ -121,6 +121,7 @@ final class TrackerViewController: UIViewController {
     private var trackerRecordStore = TrackerRecordStore()
     private lazy var alertPresenter: AlertPresenterProtocol = AlertPresenter(delegate: self)
     private let userAppSettingsStorage = UserAppSettingsStorage.shared
+    private let analyticService: AnalyticServiceProtocol = AnalyticService()
     
     lazy var trackerHabbitViewController: TrackerHabbitViewController = {
         let viewController = TrackerHabbitViewController()
@@ -137,6 +138,7 @@ final class TrackerViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        analyticService.trackOpenScreen(screen: .main)
         print("TrackerViewController did appear")
     }
 
@@ -159,6 +161,11 @@ final class TrackerViewController: UIViewController {
         getAllCategories()
         getCompletedTrackers()
         updateFilteredCategories()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(true)
+        analyticService.trackCloseScreen(screen: .main)
     }
     
     // MARK: - Setup UI
@@ -270,6 +277,7 @@ final class TrackerViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func didTapFilterButton() {
+        analyticService.trackClick(screen: .main, item: .tapFilterButton)
         let filtersVC = FilterViewController(
             selectedFilter: filter,
             delegate: self
@@ -282,6 +290,7 @@ final class TrackerViewController: UIViewController {
     }
     
     @objc private func addTrackerButtonTapped() {
+        analyticService.trackClick(screen: .main, item: .tapAddTrack)
         let trackerCreateVC = TrackerCreateViewController()
         trackerCreateVC.trackerViewController = self
         trackerCreateVC.modalPresentationStyle = .pageSheet
@@ -594,6 +603,7 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
                     },
                     UIAction(title: Constants.deleteMessage, attributes: .destructive) { [weak self] _ in
                         guard let self else { return }
+                        self.analyticService.trackClick(screen: .main, item: .deleteFromContextMenu)
                         self.deleteTracker(tracker)
                     }
                 ]
