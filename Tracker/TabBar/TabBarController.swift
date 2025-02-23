@@ -20,7 +20,7 @@ final class TabBarController: UITabBarController {
         // Создание первого ViewController
         let trackerViewController = TrackerViewController()
         trackerViewController.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: Constants.trackerVCVCTitle,
             image: UIImage(named: "home_icon"),
             selectedImage: UIImage(named: "home_icon")
         )
@@ -28,7 +28,7 @@ final class TabBarController: UITabBarController {
         // Создание второго ViewController
         let statViewController = StatViewController()
         statViewController.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            title: Constants.statisticVCTitle,
             image: UIImage(named: "stat_icon"),
             selectedImage: UIImage(named: "stat_icon")
         )
@@ -38,3 +38,9 @@ final class TabBarController: UITabBarController {
     }
 }
 
+private extension TabBarController {
+    enum Constants {
+        static let statisticVCTitle = NSLocalizedString("statistic.screen.title", comment: "")
+        static let trackerVCVCTitle = NSLocalizedString("trackers.screen.title", comment: "")
+    }
+}

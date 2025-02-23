@@ -195,10 +195,15 @@ final class TrackerCollectionViewCell: UICollectionViewCell {
             addButton.backgroundColor = tracker.color
         }
         
-        let wordDay = pluralizeDays(completedDays)
-        daysLabel.text = "\(wordDay)"
+        daysLabel.text = String.localizedStringWithFormat(Constants.numberOfDays, completedDays)
         
         let image = isCompletedToday ? completedImage : plusImage
         addButton.setImage(image, for: .normal)
+    }
+}
+
+private extension TrackerCollectionViewCell {
+    enum Constants {
+        static let numberOfDays = NSLocalizedString("numberOfDays", comment: "Number of completed habbits/events in days")
     }
 }

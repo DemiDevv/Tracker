@@ -1,5 +1,5 @@
 import Foundation
-import YandexMobileMetrica
+import AppMetricaCore
 
 protocol AnalyticServiceProtocol {
     static func activate()
@@ -11,10 +11,10 @@ protocol AnalyticServiceProtocol {
 struct AnalyticService: AnalyticServiceProtocol {
     static func activate() {
         guard
-            let configuration = YMMYandexMetricaConfiguration(apiKey: Constants.AppMetricaKey)
+            let configuration = AppMetricaConfiguration(apiKey: Constants.AppMetricaKey)
         else { return }
         
-        YMMYandexMetrica.activate(with: configuration)
+        AppMetrica.activate(with: configuration)
     }
 }
 
@@ -35,7 +35,7 @@ extension AnalyticService {
 private extension AnalyticService {
     private func reportEvent(event: String, screen: String, item: String? = nil) {
         let params : [AnyHashable : Any] = ["event": event, "screen": screen]
-        YMMYandexMetrica.reportEvent("EVENT", parameters: params, onFailure: { (error) in
+        AppMetrica.reportEvent(name: "EVENT", parameters: params, onFailure: { (error) in
             print("REPORT ERROR: %@", error.localizedDescription)
         })
     }

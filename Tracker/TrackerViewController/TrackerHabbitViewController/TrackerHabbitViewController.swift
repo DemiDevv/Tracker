@@ -240,7 +240,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             color: color,
             emoji: emoji,
             schedule: selectedSchedule,
-            type: .habbit,
+            type: .habit,
             isPinned: false
         )
         if trackerHabbitDelegate == nil {

@@ -16,7 +16,7 @@ final class TrackerViewController: UIViewController {
     
     private lazy var trackerLabel: UILabel = {
         let label = UILabel()
-        label.text = "Трекеры"
+        label.text = Constants.trackerVCVCTitle
         label.font = .systemFont(ofSize: 34, weight: .bold)
         label.tintColor = Colors.viewBackground
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -25,17 +25,15 @@ final class TrackerViewController: UIViewController {
     
     private lazy var datePicker: UIDatePicker = {
         let picker = UIDatePicker()
+        picker.maximumDate = Date()
         picker.datePickerMode = .date
-        picker.locale = Locale(identifier: "ru_RU")
         picker.preferredDatePickerStyle = .compact
+        picker.locale = Locale(identifier: Constants.dataPickerLocal)
         picker.tintColor = .blueYp
         picker.layer.cornerRadius = 8
         picker.layer.masksToBounds = true
         picker.translatesAutoresizingMaskIntoConstraints = false
         picker.addTarget(self, action: #selector(datePickerValueChanged), for: .valueChanged)
-        picker.maximumDate = Date()
-        
-        picker.updateAppearance()
 
         return picker
     }()
@@ -51,7 +49,7 @@ final class TrackerViewController: UIViewController {
             NSAttributedString.Key.foregroundColor: UIColor.grayYp
         ]
         let attributedPlaceholder = NSAttributedString(
-            string: "Поиск",
+            string: Constants.searchPlaceholder,
             attributes: attributes
         )
         textField.attributedPlaceholder = attributedPlaceholder
@@ -71,7 +69,7 @@ final class TrackerViewController: UIViewController {
     
     private lazy var emptyPlaceholderLabel: UILabel = {
         let label = UILabel()
-        label.text = "Что будем отслеживать?"
+        label.text = Constants.trackerPlaceHolder
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 12)
         label.tintColor = .blackDayYp
@@ -497,7 +495,7 @@ extension TrackerViewController: TrackerCellDelegate {
         
         let record: TrackerRecord? = {
             switch tracker.type {
-            case .habbit:
+            case .habit:
                 return trackerRecordStore
                     .fetchAllRecords()
                     .first { $0.trackerID == id && Calendar.current.isDate($0.date, inSameDayAs: datePicker.date) }
@@ -505,13 +503,15 @@ extension TrackerViewController: TrackerCellDelegate {
                 return trackerRecordStore
                     .fetchAllRecords()
                     .first { $0.trackerID == id }
+                
+            default : return nil
             }
         }()
 
         if let record {
             trackerRecordStore.deleteRecord(for: record)
         } else {
-            let newRecord = TrackerRecord(trackerID: id, date: tracker.type == .habbit ? datePicker.date : Date.distantPast)
+            let newRecord = TrackerRecord(trackerID: id, date: tracker.type == .habit ? datePicker.date : Date.distantPast)
             trackerRecordStore.addTrackerRecord(with: newRecord)
         }
         getCompletedTrackers()
@@ -525,7 +525,7 @@ extension TrackerViewController: TrackerCellDelegate {
             .first(where: { $0.id == id }) else { return }
         
         // Привычка: Удаляем запись за текущий день
-        if tracker.type == .habbit {
+        if tracker.type == .habit {
             if let record = trackerRecordStore
                 .fetchAllRecords()
                 .first(where: {
@@ -708,6 +708,7 @@ extension TrackerViewController: FilterViewControllerDelegate {
 
 private extension TrackerViewController {
     enum Constants {
+        static let trackerPlaceHolder = NSLocalizedString("tracker.screen.dummyPlaceHolder", comment: "")
         static let searchPlaceholder = NSLocalizedString("searchPlaceholder", comment: "")
         static let filterButtonTitle = NSLocalizedString("filters", comment: "")
         static let dataPickerLocal = NSLocalizedString("datePicker", comment: "")
@@ -718,5 +719,6 @@ private extension TrackerViewController {
         static let deleteMessage = NSLocalizedString("delete", comment: "")
         static let cancelMessage = NSLocalizedString("cancel", comment: "")
         static let alertMessage = NSLocalizedString("tracker.screen.alertMessage", comment: "")
+        static let trackerVCVCTitle = NSLocalizedString("trackers.screen.title", comment: "")
     }
 }
