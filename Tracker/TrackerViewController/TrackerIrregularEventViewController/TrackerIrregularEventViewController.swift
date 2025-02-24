@@ -145,7 +145,28 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var category: TrackerCategory?
+    private var isEditMode = false
+    private var trackerToEdit: Tracker? // Трекер для редактирования
+    private var daysCount: Int = 0 // Количество дней для отображения
     
+    // MARK: - Init
+    
+    // Инициализатор для создания нового трекера
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    // Инициализатор для редактирования существующего трекера
+    init(trackerToEdit: Tracker, category: TrackerCategory?) {
+        self.trackerToEdit = trackerToEdit
+        self.category = category
+        self.isEditMode = true
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
@@ -156,9 +177,17 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
-        
-        updateCollectionViewHeights()
+
         setupViewsWithoutStackView()
+
+        if isEditMode {
+            setDataToEdit()
+        }
+
+        emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+        colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+
+        updateCollectionViewHeights()
     }
 
     @objc
@@ -183,7 +212,6 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
         colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
     }
-
     
     @objc private func textFieldDidChange() {
         guard let text = titleTextField.text else { return }
@@ -216,27 +244,54 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     
     @objc private func didTapCreateButton() {
         guard
-              let category = category?.title,
-              let title = titleTextField.text, !title.isEmpty,
-              let color = selectedColor,
-              let emoji = selectedEmoji else { return }
+            let category = category?.title,
+            let title = titleTextField.text, !title.isEmpty,
+            let color = selectedColor,
+            let emoji = selectedEmoji
+        else { return }
 
-        let newTracker = Tracker(
-            id: UUID(),
+        let tracker = Tracker(
+            id: trackerToEdit?.id ?? UUID(),
             title: title,
             color: color,
             emoji: emoji,
             schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday],
-            type: .event,
-            isPinned: false
+            type: .event ,
+            isPinned: trackerToEdit?.isPinned ?? false
         )
-        if trackerHabbitDelegate == nil {
-            print("⚠️ Делегат delegate2 не установлен")
+
+        if isEditMode {
+            trackerHabbitDelegate?.didTapSaveButton(categoryTitle: category, trackerToUpdate: tracker)
+        } else {
+            trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: tracker)
         }
 
-        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
-        print("Создан новый трекер: \(newTracker)")
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: - Setup Data for Editing
+
+    private func setDataToEdit() {
+        guard let tracker = trackerToEdit else { return }
+
+        titleTextField.text = tracker.title
+        selectedEmoji = tracker.emoji
+        selectedColor = tracker.color
+
+        if let index = Constants.emojis.firstIndex(of: tracker.emoji) {
+            let indexPath = IndexPath(row: index, section: 0)
+            emojiCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        if let index = Constants.colors.firstIndex(of: tracker.color) {
+            let indexPath = IndexPath(row: index, section: 0)
+            colorCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        optionsTableView.reloadData()
+        createButton.setTitle("Сохранить", for: .normal)
+        createButton.backgroundColor = Colors.buttonDisabledColor
+        irRegularTitle.text = "Редактирование нерегулярного события"
     }
 
     private func setupViewsWithoutStackView() {

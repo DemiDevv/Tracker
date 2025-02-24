@@ -584,8 +584,8 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
                     },
                     UIAction(title: Constants.editMessage) { [weak self] _ in
                         guard let self else { return }
+                        self.analyticService.trackClick(screen: .main, item: .editFromContextMenu)
                         let daysCount = self.completedTrackers.filter { $0.trackerID == tracker.id }.count
-                        let trackerType = tracker.type
                         
                         var realCategory: TrackerCategory? = nil
 
@@ -598,8 +598,22 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
                             }
                         }
                         
-                        let newTrackerVC = TrackerHabbitViewController()
-                        self.present(UINavigationController(rootViewController: newTrackerVC), animated: true)
+                        if tracker.type == .habit {
+                            let editTrackerVC = TrackerHabbitViewController(
+                                trackerToEdit: tracker, // Передаем трекер для редактирования
+                                category: realCategory, // Передаем категорию
+                                daysCount: daysCount    // Передаем количество дней выполнения
+                            )
+                            editTrackerVC.trackerHabbitDelegate = self
+                            self.present(UINavigationController(rootViewController: editTrackerVC), animated: true)
+                        } else {
+                            let editTrackerVC = TrackerIrregularEventViewController(
+                                trackerToEdit: tracker, // Передаем трекер для редактирования
+                                category: realCategory // Передаем категорию
+                            )
+                            editTrackerVC.trackerHabbitDelegate = self
+                            self.present(UINavigationController(rootViewController: editTrackerVC), animated: true)
+                        }
                     },
                     UIAction(title: Constants.deleteMessage, attributes: .destructive) { [weak self] _ in
                         guard let self else { return }
@@ -654,6 +668,30 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
 }
 
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
+    func didTapSaveButton(categoryTitle: String, trackerToUpdate: Tracker) {
+        print("🛠 Метод didTapSaveButton вызван с categoryTitle: \(categoryTitle)")
+        
+        // Находим категорию, к которой принадлежит трекер
+        guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
+            print("⚠️ Категория не найдена: \(categoryTitle)")
+            return
+        }
+        
+        // Получаем категорию
+        let category = categories[categoryIndex]
+        
+        // Обновляем трекер в хранилище
+        trackerStore.updateTracker(trackerToUpdate, from: category)
+        
+        // Обновляем данные
+        getAllCategories()
+        getCompletedTrackers()
+        updateFilteredCategories()
+        
+        // Закрываем экран редактирования
+        dismiss(animated: true)
+    }
+    
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker) {
         print("🛠 Метод didTapCreateButton вызван с categoryTitle: \(categoryTitle)")
         getAllCategories()

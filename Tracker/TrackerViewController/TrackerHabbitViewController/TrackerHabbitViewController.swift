@@ -3,6 +3,7 @@ import UIKit
 protocol TrackerHabbitViewControllerDelegate: AnyObject {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker)
     func didTapCancelButton()
+    func didTapSaveButton(categoryTitle: String, trackerToUpdate: Tracker)
 }
 
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
@@ -12,6 +13,10 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     private var selectedSchedule = [Weekday]()
     weak var scheduleDelegate: ScheduleViewControllerDelegate?
     weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
+    
+    private var isEditMode = false
+    private var trackerToEdit: Tracker? // Трекер для редактирования
+    private var daysCount: Int = 0 // Количество дней для отображения
     
     var onTrackerCreated: ((Tracker) -> Void)?
     
@@ -30,6 +35,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         label.textAlignment = .center
         label.font = .systemFont(ofSize: 32, weight: .bold)
         label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
@@ -170,8 +176,30 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         return tapGesture
     }()
     private var category: TrackerCategory?
+    
+    // MARK: - Init
+    
+    // Инициализатор для создания нового трекера
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    // Инициализатор для редактирования существующего трекера
+    init(trackerToEdit: Tracker, category: TrackerCategory?, daysCount: Int) {
+        self.trackerToEdit = trackerToEdit
+        self.category = category
+        self.daysCount = daysCount
+        self.isEditMode = true
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - View Lifecycle
     
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = Colors.viewBackground
@@ -180,14 +208,17 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
-        
+
         setupViews()
-        
+
+        if isEditMode {
+            setDataToEdit()
+        }
+
         emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
         colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
-        
+
         updateCollectionViewHeights()
-        
     }
     
     @objc
@@ -226,29 +257,30 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     }
     
     @objc private func didTapCreateButton() {
-        print("Selected schedule: \(selectedSchedule)")
         guard
             let category = category?.title,
             let title = titleTextField.text, !title.isEmpty,
             let color = selectedColor,
             let emoji = selectedEmoji,
-            !selectedSchedule.isEmpty else { return }
-        
-        let newTracker = Tracker(
-            id: UUID(),
+            !selectedSchedule.isEmpty
+        else { return }
+
+        let tracker = Tracker(
+            id: trackerToEdit?.id ?? UUID(),
             title: title,
             color: color,
             emoji: emoji,
             schedule: selectedSchedule,
             type: .habit,
-            isPinned: false
+            isPinned: trackerToEdit?.isPinned ?? false
         )
-        if trackerHabbitDelegate == nil {
-            print("⚠️ Делегат delegate2 не установлен")
+
+        if isEditMode {
+            trackerHabbitDelegate?.didTapSaveButton(categoryTitle: category, trackerToUpdate: tracker)
+        } else {
+            trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: tracker)
         }
-        
-        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
-        print("Создан новый трекер: \(newTracker)")
+
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
@@ -292,9 +324,48 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         return shortNames.joined(separator: ", ")
     }
     
+    // MARK: - Setup Data for Editing
+
+    private func setDataToEdit() {
+        guard let tracker = trackerToEdit else { return }
+
+        titleTextField.text = tracker.title
+        selectedEmoji = tracker.emoji
+        selectedColor = tracker.color
+        selectedSchedule = tracker.schedule
+        
+        setupDaysCount(daysCount)
+        print("\(daysCount)")
+
+        if let index = Constants.emojis.firstIndex(of: tracker.emoji) {
+            let indexPath = IndexPath(row: index, section: 0)
+            emojiCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        if let index = Constants.colors.firstIndex(of: tracker.color) {
+            let indexPath = IndexPath(row: index, section: 0)
+            colorCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        optionsTableView.reloadData()
+        createButton.setTitle("Сохранить", for: .normal)
+        createButton.backgroundColor = Colors.buttonDisabledColor
+        habbitTitle.text = "Редактирование привычки"
+    }
+    
+    func setupDaysCount(_ dayCount: Int) {
+        daysCountLabel.isHidden = false
+        let dayString = String.localizedStringWithFormat(
+            NumberOfDays.numberOfDays ,
+            dayCount
+        )
+        daysCountLabel.text = dayString
+    }
+    
     private func setupViews() {
         // Добавляем фиксированные элементы на основной view
         view.addSubview(habbitTitle)
+        view.addSubview(daysCountLabel)
         view.addSubview(titleTextField)
         view.addSubview(maxLengthLabel)
         view.addSubview(optionsTableView)
@@ -321,10 +392,16 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
+            // habbitTitle
             habbitTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             habbitTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            titleTextField.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24),
+            // daysCountLabel
+            daysCountLabel.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24),
+            daysCountLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            // titleTextField
+            titleTextField.topAnchor.constraint(equalTo: daysCountLabel.bottomAnchor, constant: 40),
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             titleTextField.heightAnchor.constraint(equalToConstant: 75),
@@ -595,5 +672,11 @@ extension TrackerHabbitViewController: CategoryViewControllerDelegate {
         print("Selected category: \(selectedCategory.title)")
         category = selectedCategory
         optionsTableView.reloadData()
+    }
+}
+
+private extension TrackerHabbitViewController {
+    enum NumberOfDays {
+        static let numberOfDays = NSLocalizedString("numberOfDays", comment: "Number of completed habbits/events in days")
     }
 }
