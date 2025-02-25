@@ -420,7 +420,7 @@ final class TrackerViewController: UIViewController {
         
         if !pinnedTrackerList.isEmpty {
             let pinnedCategory = TrackerCategory(
-                title: "Закрепленные",
+                title: Constants.pinnedCategory,
                 trackers: pinnedTrackerList.sorted(by: {$0.title > $1.title})
             )
             cleanCategories.insert(pinnedCategory, at: 0)
@@ -559,7 +559,6 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
         
         let tracker = filteredCategories[indexPath.section].trackers[indexPath.row]
         let pinUnpinMessage = tracker.isPinned ? Constants.unpinMessage : Constants.pinMessage
-        let category = filteredCategories[indexPath.section]
         
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { actions in
             return UIMenu(
@@ -600,16 +599,16 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
                         
                         if tracker.type == .habit {
                             let editTrackerVC = TrackerHabbitViewController(
-                                trackerToEdit: tracker, // Передаем трекер для редактирования
-                                category: realCategory, // Передаем категорию
-                                daysCount: daysCount    // Передаем количество дней выполнения
+                                trackerToEdit: tracker,
+                                category: realCategory,
+                                daysCount: daysCount
                             )
                             editTrackerVC.trackerHabbitDelegate = self
                             self.present(UINavigationController(rootViewController: editTrackerVC), animated: true)
                         } else {
                             let editTrackerVC = TrackerIrregularEventViewController(
-                                trackerToEdit: tracker, // Передаем трекер для редактирования
-                                category: realCategory // Передаем категорию
+                                trackerToEdit: tracker,
+                                category: realCategory
                             )
                             editTrackerVC.trackerHabbitDelegate = self
                             self.present(UINavigationController(rootViewController: editTrackerVC), animated: true)
@@ -670,20 +669,16 @@ extension TrackerViewController: UICollectionViewDelegateFlowLayout {
 extension TrackerViewController: TrackerHabbitViewControllerDelegate {
     func didTapSaveButton(categoryTitle: String, trackerToUpdate: Tracker) {
         print("🛠 Метод didTapSaveButton вызван с categoryTitle: \(categoryTitle)")
-        
-        // Находим категорию, к которой принадлежит трекер
+    
         guard let categoryIndex = categories.firstIndex(where: { $0.title == categoryTitle }) else {
             print("⚠️ Категория не найдена: \(categoryTitle)")
             return
         }
         
-        // Получаем категорию
         let category = categories[categoryIndex]
         
-        // Обновляем трекер в хранилище
         trackerStore.updateTracker(trackerToUpdate, from: category)
         
-        // Обновляем данные
         getAllCategories()
         getCompletedTrackers()
         updateFilteredCategories()
@@ -743,6 +738,31 @@ extension TrackerViewController: FilterViewControllerDelegate {
         filter = nil
     }
 }
+
+extension TrackerViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if scrollView.isDragging {
+            showFilterButton()
+            let height = scrollView.frame.size.height
+            let contentYOffset = scrollView.contentOffset.y
+            let distanceFromBottom = scrollView.contentSize.height - contentYOffset
+            
+            if distanceFromBottom < height {
+                hideFilterButton()
+            }
+        }
+        func showFilterButton() {
+            filterButton.alpha = 1
+        }
+
+        func hideFilterButton() {
+            UIView.animate(withDuration: 1.5, delay: 0.3) {
+                self.filterButton.alpha = 0
+            }
+        }
+    }
+}
+
 
 private extension TrackerViewController {
     enum Constants {

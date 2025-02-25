@@ -244,6 +244,7 @@ extension CategoryViewController: UITableViewDelegate {
         currentCell?.accessoryType = .checkmark
         tableView.deselectRow(at: indexPath, animated: true)
         viewModel.selectCategoryBy(indexPath: indexPath)
+        dismiss(animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

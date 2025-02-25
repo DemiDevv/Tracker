@@ -321,7 +321,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
-            irRegularTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            irRegularTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 32),
             irRegularTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             titleTextField.topAnchor.constraint(equalTo: irRegularTitle.bottomAnchor, constant: 24),

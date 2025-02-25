@@ -8,6 +8,7 @@ protocol TrackerHabbitViewControllerDelegate: AnyObject {
 
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private var optionsTableViewTopConstraint: NSLayoutConstraint?
+    private var daysCountTopConstraint: NSLayoutConstraint?
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var selectedSchedule = [Weekday]()
@@ -213,6 +214,10 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
 
         if isEditMode {
             setDataToEdit()
+            createButton.isEnabled = true
+            daysCountTopConstraint?.constant = 105
+        } else {
+            daysCountTopConstraint?.constant = 24
         }
 
         emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
@@ -233,9 +238,9 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         let isOverLimit = text.count > 38
 
         maxLengthLabel.isHidden = !isOverLimit
-        createButton.isEnabled = !isTextEmpty && !isOverLimit
+        createButton.isEnabled = !isOverLimit && (!isTextEmpty || isEditMode) // Учитываем режим редактирования
 
-        if isOverLimit || isTextEmpty {
+        if isOverLimit || (isTextEmpty && !isEditMode) {
             createButton.backgroundColor = .grayYp
             createButton.setTitleColor(.white, for: .normal)
         } else {
@@ -349,8 +354,12 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
 
         optionsTableView.reloadData()
         createButton.setTitle("Сохранить", for: .normal)
-        createButton.backgroundColor = Colors.buttonDisabledColor
         habbitTitle.text = "Редактирование привычки"
+        
+        // Обновляем состояние кнопки
+        createButton.isEnabled = true
+        createButton.backgroundColor = Colors.buttonDisabledColor
+        createButton.setTitleColor(Colors.viewBackground, for: .normal)
     }
     
     func setupDaysCount(_ dayCount: Int) {
@@ -388,12 +397,15 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         optionsTableViewTopConstraint = optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24)
         optionsTableViewTopConstraint?.isActive = true
         
-        guard let constant = optionsTableViewTopConstraint else { return }
+        daysCountTopConstraint = titleTextField.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24)
+        daysCountTopConstraint?.isActive = true
+        
+        guard let constant = optionsTableViewTopConstraint, let daysConstant = daysCountTopConstraint else { return }
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
             // habbitTitle
-            habbitTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            habbitTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 32),
             habbitTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // daysCountLabel
@@ -401,7 +413,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
             daysCountLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             // titleTextField
-            titleTextField.topAnchor.constraint(equalTo: daysCountLabel.bottomAnchor, constant: 40),
+            daysConstant,
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             titleTextField.heightAnchor.constraint(equalToConstant: 75),
