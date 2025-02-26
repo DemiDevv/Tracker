@@ -33,8 +33,8 @@ final class ScheduleViewController: UIViewController {
     private lazy var doneButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Готово", for: .normal)
-        button.backgroundColor = .blackDayYp
-        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = Colors.buttonDisabledColor
+        button.setTitleColor(Colors.viewBackground, for: .normal)
         button.layer.cornerRadius = 12
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(didTapDoneButton), for: .touchUpInside)
@@ -46,7 +46,7 @@ final class ScheduleViewController: UIViewController {
     private var selectedDays = Set<Weekday>()
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         
         setUpConstrains()
     }
@@ -121,7 +121,7 @@ extension ScheduleViewController: UITableViewDelegate, UITableViewDataSource {
         cell.switchControl.addTarget(self, action: #selector(didChangeSwitch(_:)), for: .valueChanged)
         cell.switchControl.isOn = selectedDays.contains(weekday)
         cell.selectionStyle = .none
-        cell.backgroundColor = .backgroundDayYp
+        cell.backgroundColor = Colors.tableCellColor
         
         return cell
     }

@@ -34,7 +34,7 @@ final class AlertPresenter: AlertPresenterProtocol {
             alert.preferredAction = cancelAction
         }
         
-        alert.view.accessibilityIdentifier = "Alert"
+        alert.view.accessibilityIdentifier = AccessibilityIdentifiers.alert
         delegate.present(alert, animated: true, completion: nil)
     }
 }

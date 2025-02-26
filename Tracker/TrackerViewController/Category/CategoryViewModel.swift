@@ -14,15 +14,15 @@ final class CategoryViewModel {
     var onCategoriesChanged: (([TrackerCategory]) -> Void)?
     var onCategorySelected: ((TrackerCategory) -> Void)?
     
+    var categoriesAmount: Int {
+       categories.count
+    }
+    
     func loadCategories() {
         categories = trackerCategoryStore.fetchAllCategories()
     }
     
-    func numberOfCategories() -> Int {
-        categories.count
-    }
-    
-    func categoryBy(index: Int) -> TrackerCategory {
+    func getCategoryBy(index: Int) -> TrackerCategory {
         categories[index]
     }
     

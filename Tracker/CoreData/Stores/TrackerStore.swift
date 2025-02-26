@@ -76,10 +76,38 @@ extension TrackerStore: TrackerStoreProtocol {
         trackerCoreData.schedule = tracker.schedule as NSObject
         trackerCoreData.type = trackerTypeValueTransformer.transformedValue(tracker.type) as? String
         trackerCoreData.category = categoryCoreData
+        trackerCoreData.isPinned = tracker.isPinned
         categoryCoreData.addToTrackers(trackerCoreData)
         do {
             try context.save()
             print("Трекер успешно добавлен в базу данных")
+            try fetchedResultsController.performFetch()
+            print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
+        } catch {
+            print("Ошибка при сохранении контекста: \(error.localizedDescription)")
+        }
+    }
+    
+    func updateTracker(_ tracker: Tracker, from category: TrackerCategory) {
+        guard
+            let categoryCoreData = trackerCategoryStore.getCategoryByTitle(category.title),
+            let trackerToUpdate = getTrackerCoreData(by: tracker.id)
+        else {
+            return
+        }
+        
+        trackerToUpdate.id = tracker.id
+        trackerToUpdate.title = tracker.title
+        trackerToUpdate.color = uiColorMarshalling.hexString(from: tracker.color)
+        trackerToUpdate.emoji = tracker.emoji
+        trackerToUpdate.schedule = tracker.schedule as NSObject
+        trackerToUpdate.type = trackerTypeValueTransformer.transformedValue(tracker.type) as? String
+        trackerToUpdate.category = categoryCoreData
+        trackerToUpdate.isPinned = tracker.isPinned
+        
+        do {
+            try context.save()
+            print("Трекер успешно обновлен")
             try fetchedResultsController.performFetch()
             print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
         } catch {
@@ -103,6 +131,37 @@ extension TrackerStore: TrackerStoreProtocol {
         } catch {
             print("❌ Failed to fetch tracker by UUID: \(error)")
             return nil
+        }
+    }
+    
+    func updateTrackerPin(_ tracker: Tracker) {
+        guard let trackerToUpdate = getTrackerCoreData(by: tracker.id) else { return }
+        trackerToUpdate.isPinned = tracker.isPinned
+        
+        do {
+            try context.save()
+            print("Закрепленный трекер успешно обновлен")
+            try fetchedResultsController.performFetch()
+            print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
+        } catch {
+            print("Ошибка при сохранении контекста: \(error.localizedDescription)")
+        }
+    }
+    
+    func deleteTracker(_ tracker: Tracker) {
+        guard let trackerToDelete = getTrackerCoreData(by: tracker.id) else {
+            return
+        }
+        
+        context.delete(trackerToDelete)
+        
+        do {
+            try context.save()
+            print("Трекер успешно удален")
+            try fetchedResultsController.performFetch()
+            print("Обновленные трекеры: \(fetchedResultsController.fetchedObjects ?? [])")
+        } catch {
+            print("Ошибка при сохранении контекста: \(error.localizedDescription)")
         }
     }
 }

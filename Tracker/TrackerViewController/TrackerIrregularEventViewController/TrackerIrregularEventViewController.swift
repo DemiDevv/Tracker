@@ -7,7 +7,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         let label = UILabel()
         label.text = "Новое нерегулярное событие"
         label.font = .systemFont(ofSize: 16)
-        label.tintColor = .black
+        label.tintColor = Colors.fontColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -17,12 +17,12 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         textField.clearButtonMode = .whileEditing
         textField.placeholder = "Введите название трекера"
         textField.borderStyle = .none
-        textField.backgroundColor = .backgroundDayYp
+        textField.backgroundColor = Colors.tableCellColor
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
         textField.leftViewMode = .always
         textField.translatesAutoresizingMaskIntoConstraints = false
-
+        
         textField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
         return textField
     }()
@@ -44,29 +44,29 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true  // Закругление углов таблицы
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = Colors.tableCellColor
         tableView.separatorInset = .zero  // Убираем внутренние отступы для разделителей
         tableView.separatorColor = .lightGray  // Цвет разделителей
         return tableView
     }()
-    
-    
     
     private lazy var emojiLabel: UILabel = {
         let emojiLabel = UILabel()
         emojiLabel.text = "Emoji"
         emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        emojiLabel.tintColor = Colors.fontColor
         return emojiLabel
         
     }()
     
     private lazy var colorLabel: UILabel = {
-        let emojiLabel = UILabel()
-        emojiLabel.text = "Цвет"
-        emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
-        return emojiLabel
+        let colorLabel = UILabel()
+        colorLabel.text = "Цвет"
+        colorLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        colorLabel.translatesAutoresizingMaskIntoConstraints = false
+        colorLabel.tintColor = Colors.fontColor
+        return colorLabel
         
     }()
     
@@ -76,6 +76,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = Colors.viewBackground
         return collectionView
     }()
     
@@ -85,9 +86,9 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = Colors.viewBackground
         return collectionView
     }()
-    
     
     private lazy var buttonContainerView: UIView = {
         let view = UIView()
@@ -144,20 +145,49 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var category: TrackerCategory?
+    private var isEditMode = false
+    private var trackerToEdit: Tracker? // Трекер для редактирования
+    private var daysCount: Int = 0 // Количество дней для отображения
     
+    // MARK: - Init
+    
+    // Инициализатор для создания нового трекера
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    // Инициализатор для редактирования существующего трекера
+    init(trackerToEdit: Tracker, category: TrackerCategory?) {
+        self.trackerToEdit = trackerToEdit
+        self.category = category
+        self.isEditMode = true
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     // MARK: - View Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         view.addGestureRecognizer(tapGesture)
         optionsTableView.dataSource = self
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
-        
-        updateCollectionViewHeights()
+
         setupViewsWithoutStackView()
+
+        if isEditMode {
+            setDataToEdit()
+        }
+
+        emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+        colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
+
+        updateCollectionViewHeights()
     }
 
     @objc
@@ -182,28 +212,26 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         emojiCollectionView.heightAnchor.constraint(equalToConstant: emojiHeight).isActive = true
         colorCollectionView.heightAnchor.constraint(equalToConstant: colorHeight).isActive = true
     }
-
     
     @objc private func textFieldDidChange() {
         guard let text = titleTextField.text else { return }
-        
-        if text.count > 38 {
-            maxLengthLabel.isHidden = false
-            createButton.isEnabled = false
+
+        let isTextEmpty = text.isEmpty
+        let isOverLimit = text.count > 38
+
+        maxLengthLabel.isHidden = !isOverLimit
+        createButton.isEnabled = !isTextEmpty && !isOverLimit
+
+        if isOverLimit || isTextEmpty {
             createButton.backgroundColor = .grayYp
-            
-            // Меняем отступ на 32, если лейбл виден
-            optionsTableViewTopConstraint.constant = 62
+            createButton.setTitleColor(.white, for: .normal)
         } else {
-            maxLengthLabel.isHidden = true
-            createButton.isEnabled = !text.isEmpty
-            createButton.backgroundColor = text.isEmpty ? .grayYp : .blackDayYp
-            
-            // Меняем отступ на 24, если лейбл скрыт
-            optionsTableViewTopConstraint.constant = 24
+            createButton.backgroundColor = Colors.buttonDisabledColor
+            createButton.setTitleColor(Colors.viewBackground, for: .normal)
         }
-        
-        // Анимируем изменение отступа
+
+        optionsTableViewTopConstraint?.constant = isOverLimit ? 62 : 24
+
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
         }
@@ -216,26 +244,54 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
     
     @objc private func didTapCreateButton() {
         guard
-              let category = category?.title,
-              let title = titleTextField.text, !title.isEmpty,
-              let color = selectedColor,
-              let emoji = selectedEmoji else { return }
+            let category = category?.title,
+            let title = titleTextField.text, !title.isEmpty,
+            let color = selectedColor,
+            let emoji = selectedEmoji
+        else { return }
 
-        let newTracker = Tracker(
-            id: UUID(),
+        let tracker = Tracker(
+            id: trackerToEdit?.id ?? UUID(),
             title: title,
             color: color,
             emoji: emoji,
             schedule: [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday],
-            type: .event
+            type: .event ,
+            isPinned: trackerToEdit?.isPinned ?? false
         )
-        if trackerHabbitDelegate == nil {
-            print("⚠️ Делегат delegate2 не установлен")
+
+        if isEditMode {
+            trackerHabbitDelegate?.didTapSaveButton(categoryTitle: category, trackerToUpdate: tracker)
+        } else {
+            trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: tracker)
         }
 
-        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
-        print("Создан новый трекер: \(newTracker)")
-        presentingViewController?.dismiss(animated: true, completion: nil)
+        presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+    }
+    
+    // MARK: - Setup Data for Editing
+
+    private func setDataToEdit() {
+        guard let tracker = trackerToEdit else { return }
+
+        titleTextField.text = tracker.title
+        selectedEmoji = tracker.emoji
+        selectedColor = tracker.color
+
+        if let index = Constants.emojis.firstIndex(of: tracker.emoji) {
+            let indexPath = IndexPath(row: index, section: 0)
+            emojiCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        if let index = Constants.colors.firstIndex(of: tracker.color) {
+            let indexPath = IndexPath(row: index, section: 0)
+            colorCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        optionsTableView.reloadData()
+        createButton.setTitle("Сохранить", for: .normal)
+        createButton.backgroundColor = Colors.buttonDisabledColor
+        irRegularTitle.text = "Редактирование нерегулярного события"
     }
 
     private func setupViewsWithoutStackView() {
@@ -265,7 +321,7 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
-            irRegularTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            irRegularTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 32),
             irRegularTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             titleTextField.topAnchor.constraint(equalTo: irRegularTitle.bottomAnchor, constant: 24),
@@ -369,10 +425,11 @@ final class TrackerIrregularEventViewController: UIViewController, UITableViewDa
         
         cell.textLabel?.text = "Категория"
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = .backgroundDayYp
         cell.detailTextLabel?.text = category?.title
         cell.detailTextLabel?.font = UIFont.systemFont(ofSize: 17)
         cell.detailTextLabel?.textColor = .grayYp
+        cell.backgroundColor = Colors.tableCellColor
+        
         return cell
     }
     
@@ -450,7 +507,7 @@ extension TrackerIrregularEventViewController: UICollectionViewDataSource {
                 return UICollectionViewCell()
             }
             cell.innerColorView.backgroundColor = Constants.colors[indexPath.row]
-            cell.titleLabel.isHidden = true
+            cell.titleLabel.isHidden = true // Скрываем текстовую метку для Color ячейки
             cell.colorView.isHidden = false
             return cell
         }
@@ -462,20 +519,18 @@ extension TrackerIrregularEventViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
-        cell.titleLabel.backgroundColor = .lightGrayYp
+        cell.isSelected = true
         
         if collectionView == emojiCollectionView {
             selectedEmoji = Constants.emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
             selectedColor = Constants.colors[indexPath.row]
-            cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell
-        cell?.titleLabel.backgroundColor = .white
-        cell?.colorView.layer.borderColor = UIColor.white.cgColor
+        guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
+        cell.isSelected = false
     }
 }
 

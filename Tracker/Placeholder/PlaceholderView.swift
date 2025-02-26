@@ -41,6 +41,8 @@ final class PlaceholderView: UIView {
         NSLayoutConstraint.activate([
             descriptionImage.centerXAnchor.constraint(equalTo: centerXAnchor),
             descriptionImage.centerYAnchor.constraint(equalTo: centerYAnchor),
+            descriptionImage.heightAnchor.constraint(equalToConstant: 80),
+            descriptionImage.widthAnchor.constraint(equalToConstant: 80),
             
             descriptionLabel.topAnchor.constraint(equalTo: descriptionImage.bottomAnchor, constant: 8),
             descriptionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),

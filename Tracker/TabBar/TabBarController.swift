@@ -1,8 +1,6 @@
 import UIKit
 
 final class TabBarController: UITabBarController {
-    
-    weak var onboardingViewController: OnboardingViewController?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -10,8 +8,9 @@ final class TabBarController: UITabBarController {
         if #available(iOS 13.0, *) {
             let tabBarAppearance: UITabBarAppearance = UITabBarAppearance()
             tabBarAppearance.configureWithDefaultBackground()
-            tabBarAppearance.backgroundColor = UIColor.whiteYp
+            tabBarAppearance.backgroundColor = Colors.viewBackground
             UITabBar.appearance().standardAppearance = tabBarAppearance
+            
 
             if #available(iOS 15.0, *) {
                 UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
@@ -21,7 +20,7 @@ final class TabBarController: UITabBarController {
         // Создание первого ViewController
         let trackerViewController = TrackerViewController()
         trackerViewController.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: Constants.trackerVCVCTitle,
             image: UIImage(named: "home_icon"),
             selectedImage: UIImage(named: "home_icon")
         )
@@ -29,7 +28,7 @@ final class TabBarController: UITabBarController {
         // Создание второго ViewController
         let statViewController = StatViewController()
         statViewController.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            title: Constants.statisticVCTitle,
             image: UIImage(named: "stat_icon"),
             selectedImage: UIImage(named: "stat_icon")
         )
@@ -39,3 +38,9 @@ final class TabBarController: UITabBarController {
     }
 }
 
+private extension TabBarController {
+    enum Constants {
+        static let statisticVCTitle = NSLocalizedString("statistic.screen.title", comment: "")
+        static let trackerVCVCTitle = NSLocalizedString("trackers.screen.title", comment: "")
+    }
+}
