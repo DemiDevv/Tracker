@@ -1,9 +1,5 @@
 import UIKit
 
-protocol StatServiceProtocol {
-    func getStatistic() -> [StatModel]
-}
-
 final class StatViewController: UIViewController {
     
     // MARK: - Properties

@@ -1,13 +1,6 @@
 import Foundation
 import AppMetricaCore
 
-protocol AnalyticServiceProtocol {
-    static func activate()
-    func trackOpenScreen(screen: AnalyticScreen)
-    func trackCloseScreen(screen: AnalyticScreen)
-    func trackClick(screen: AnalyticScreen, item: AnalyticItems)
-}
-
 struct AnalyticService: AnalyticServiceProtocol {
     static func activate() {
         guard
@@ -33,7 +26,7 @@ extension AnalyticService {
 }
 
 private extension AnalyticService {
-    private func reportEvent(event: String, screen: String, item: String? = nil) {
+    func reportEvent(event: String, screen: String, item: String? = nil) {
         let params : [AnyHashable : Any] = ["event": event, "screen": screen]
         AppMetrica.reportEvent(name: "EVENT", parameters: params, onFailure: { (error) in
             print("REPORT ERROR: %@", error.localizedDescription)

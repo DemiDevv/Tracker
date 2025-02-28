@@ -1,10 +1,5 @@
 import Foundation
 
-protocol UserAppSettingsStorageProtocol {
-    var isOnboardingVisited: Bool { get set }
-    func clean()
-}
-
 final class UserAppSettingsStorage: UserAppSettingsStorageProtocol {
     
     // MARK: - Properties

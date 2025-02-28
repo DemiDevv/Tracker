@@ -5,7 +5,7 @@ extension UITableView {
   @IBInspectable
   var isEmptyHeaderHidden: Bool {
         get {
-          return tableHeaderView != nil
+          tableHeaderView != nil
         }
         set {
           if newValue {
