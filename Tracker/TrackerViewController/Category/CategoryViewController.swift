@@ -8,21 +8,23 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - Properties
     
-    lazy var tableView: UITableView = {
+    private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true  // Закругление углов таблицы
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.separatorInset = .zero  // Убираем внутренние отступы для разделителей
         tableView.separatorColor = .lightGray  // Цвет разделителей
+        tableView.backgroundColor = Colors.viewBackground
         return tableView
     }()
     
-    lazy var createButton: UIButton = {
+    private lazy var createButton: UIButton = {
         let button = UIButton()
         button.setTitle("Добавить категорию", for: .normal)
-        button.backgroundColor = .blackDayYp
+        button.backgroundColor = Colors.buttonDisabledColor
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.setTitleColor(Colors.viewBackground, for: .normal)
         button.layer.cornerRadius = 16
         button.layer.masksToBounds = true
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -67,7 +69,7 @@ final class CategoryViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         
         setupLayout()
         setupButtons()
@@ -135,8 +137,8 @@ extension CategoryViewController {
     // MARK: - showPlaceHolder
     
     private func updatePlaceholderVisibility() {
-        let hasCategories = viewModel.numberOfCategories() > 0
-        print("Categories count: \(viewModel.numberOfCategories()), hasCategories: \(hasCategories)")
+        let hasCategories = viewModel.categoriesAmount > 0
+        print("Categories count: \(viewModel.categoriesAmount), hasCategories: \(hasCategories)")
         
         placeHolderView.isHidden = hasCategories
         tableView.isHidden = !hasCategories
@@ -159,7 +161,7 @@ extension CategoryViewController {
             forCellReuseIdentifier: CategoryTableViewCell.identifier
         )
         
-        tableView.separatorStyle = viewModel.numberOfCategories() == 1
+        tableView.separatorStyle = viewModel.categoriesAmount == 1
             ? .none
             : .singleLine
         
@@ -225,6 +227,7 @@ extension CategoryViewController: UITableViewDelegate {
             cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
             cell.layer.mask = nil
         }
+        cell.backgroundColor = Colors.tableCellColor
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -241,6 +244,7 @@ extension CategoryViewController: UITableViewDelegate {
         currentCell?.accessoryType = .checkmark
         tableView.deselectRow(at: indexPath, animated: true)
         viewModel.selectCategoryBy(indexPath: indexPath)
+        dismiss(animated: true)
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -252,7 +256,7 @@ extension CategoryViewController: UITableViewDelegate {
         contextMenuConfigurationForRowAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        let category = viewModel.categoryBy(index: indexPath.row)
+        let category = viewModel.getCategoryBy(index: indexPath.row)
         
         return UIContextMenuConfiguration(actionProvider:  { _ in
             UIMenu(children: [
@@ -274,7 +278,7 @@ extension CategoryViewController: UITableViewDelegate {
 extension CategoryViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.numberOfCategories()
+        viewModel.categoriesAmount
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -287,7 +291,7 @@ extension CategoryViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let category = viewModel.categoryBy(index: indexPath.row)
+        let category = viewModel.getCategoryBy(index: indexPath.row)
         let isSelected = category.title == selectedCategory?.title
         
         if isSelected {

@@ -6,28 +6,25 @@ final class TrackerHabbitViewCell: UICollectionViewCell {
         label.textAlignment = .center
         label.font = UIFont.systemFont(ofSize: 32)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.backgroundColor = .white
+        label.backgroundColor = Colors.viewBackground
         label.clipsToBounds = true
         label.layer.cornerRadius = 16
         return label
     }()
     
-    // Представление для цвета (с рамкой)
     lazy var colorView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 8 // Скругляем углы для рамки
+        view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
-        view.layer.borderWidth = 3 // Толщина рамки
-        view.layer.borderColor = UIColor.white.cgColor // Цвет рамки
-        view.layer.borderColor = UIColor.white.withAlphaComponent(0.3).cgColor
+        view.layer.borderWidth = 3
+        view.layer.borderColor = UIColor.clear.cgColor // Изначально рамка прозрачная
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
     
-    // Внутреннее представление (для отступа)
     lazy var innerColorView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = 8 // Радиус чуть меньше, чтобы вписываться
+        view.layer.cornerRadius = 8
         view.layer.masksToBounds = true
         view.backgroundColor = .red // Цвет заливки
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -36,14 +33,19 @@ final class TrackerHabbitViewCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+        setupViews()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    private func setupViews() {
         contentView.addSubview(titleLabel)
         contentView.addSubview(colorView)
         colorView.addSubview(innerColorView)
         
-        // Настройка констрейнтов для titleLabel и colorView
         NSLayoutConstraint.activate([
-            
             titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             titleLabel.widthAnchor.constraint(equalToConstant: 52),
@@ -61,7 +63,34 @@ final class TrackerHabbitViewCell: UICollectionViewCell {
         ])
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+    override var isSelected: Bool {
+        didSet {
+            updateAppearance()
+        }
+    }
+    
+    private func updateAppearance() {
+        if isSelected {
+            if titleLabel.text != nil {
+                // Это ячейка с эмодзи
+                titleLabel.backgroundColor = Colors.hightlightCell
+            } else {
+                // Это ячейка с цветом
+                colorView.layer.borderColor = innerColorView.backgroundColor?.withAlphaComponent(0.3).cgColor
+            }
+        } else {
+            if titleLabel.text != nil {
+                // Это ячейка с эмодзи
+                titleLabel.backgroundColor = Colors.viewBackground
+            } else {
+                // Это ячейка с цветом
+                colorView.layer.borderColor = UIColor.clear.cgColor
+            }
+        }
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        updateAppearance() // Обновляем цвета при изменении темы
     }
 }

@@ -7,6 +7,7 @@ struct Tracker: Hashable {
     let emoji: String
     let schedule: [Weekday]
     let type: TrackerType
+    let isPinned: Bool
 }
 
 extension Tracker {
@@ -30,5 +31,6 @@ extension Tracker {
         self.emoji = emoji
         self.schedule = schedule
         self.type = type
+        self.isPinned = trackerCoreData.isPinned
     }
 }

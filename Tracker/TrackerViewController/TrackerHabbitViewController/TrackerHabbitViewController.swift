@@ -3,15 +3,21 @@ import UIKit
 protocol TrackerHabbitViewControllerDelegate: AnyObject {
     func didTapCreateButton(categoryTitle: String, trackerToAdd: Tracker)
     func didTapCancelButton()
+    func didTapSaveButton(categoryTitle: String, trackerToUpdate: Tracker)
 }
 
 final class TrackerHabbitViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private var optionsTableViewTopConstraint: NSLayoutConstraint?
+    private var daysCountTopConstraint: NSLayoutConstraint?
     private var selectedEmoji: String?
     private var selectedColor: UIColor?
     private var selectedSchedule = [Weekday]()
     weak var scheduleDelegate: ScheduleViewControllerDelegate?
     weak var trackerHabbitDelegate: TrackerHabbitViewControllerDelegate?
+    
+    private var isEditMode = false
+    private var trackerToEdit: Tracker? // Трекер для редактирования
+    private var daysCount: Int = 0 // Количество дней для отображения
     
     var onTrackerCreated: ((Tracker) -> Void)?
     
@@ -20,9 +26,26 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         let label = UILabel()
         label.text = "Новая привычка"
         label.font = .systemFont(ofSize: 16)
-        label.tintColor = .black
+        label.tintColor = Colors.fontColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
+    }()
+    
+    private lazy var daysCountLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.font = .systemFont(ofSize: 32, weight: .bold)
+        label.isHidden = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private lazy var headerStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 40
+        return stackView
     }()
     
     private lazy var titleTextField: UITextField = {
@@ -30,7 +53,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         textField.clearButtonMode = .whileEditing
         textField.placeholder = "Введите название трекера"
         textField.borderStyle = .none
-        textField.backgroundColor = .backgroundDayYp
+        textField.backgroundColor = Colors.tableCellColor
         textField.layer.cornerRadius = 16
         textField.layer.masksToBounds = true
         textField.leftViewMode = .always
@@ -57,7 +80,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         tableView.layer.cornerRadius = 16
         tableView.layer.masksToBounds = true  // Закругление углов таблицы
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.backgroundColor = .clear
+        tableView.backgroundColor = Colors.tableCellColor
         tableView.separatorInset = .zero  // Убираем внутренние отступы для разделителей
         tableView.separatorColor = .lightGray  // Цвет разделителей
         return tableView
@@ -68,16 +91,18 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         emojiLabel.text = "Emoji"
         emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        emojiLabel.tintColor = Colors.fontColor
         return emojiLabel
         
     }()
     
     private lazy var colorLabel: UILabel = {
-        let emojiLabel = UILabel()
-        emojiLabel.text = "Цвет"
-        emojiLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
-        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
-        return emojiLabel
+        let colorLabel = UILabel()
+        colorLabel.text = "Цвет"
+        colorLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+        colorLabel.translatesAutoresizingMaskIntoConstraints = false
+        colorLabel.tintColor = Colors.fontColor
+        return colorLabel
         
     }()
     
@@ -87,6 +112,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "EmojiCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = Colors.viewBackground
         return collectionView
     }()
     
@@ -96,6 +122,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         collectionView.register(TrackerHabbitViewCell.self, forCellWithReuseIdentifier: "ColorCell")
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.isScrollEnabled = false
+        collectionView.backgroundColor = Colors.viewBackground
         return collectionView
     }()
     
@@ -150,24 +177,53 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         return tapGesture
     }()
     private var category: TrackerCategory?
+    
+    // MARK: - Init
+    
+    // Инициализатор для создания нового трекера
+    init() {
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    // Инициализатор для редактирования существующего трекера
+    init(trackerToEdit: Tracker, category: TrackerCategory?, daysCount: Int) {
+        self.trackerToEdit = trackerToEdit
+        self.category = category
+        self.daysCount = daysCount
+        self.isEditMode = true
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - View Lifecycle
     
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         view.addGestureRecognizer(tapGesture)
         optionsTableView.dataSource = self
         optionsTableView.delegate = self
         optionsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "optionCell")
         optionsTableView.tableFooterView = UIView()
-        
+
         setupViews()
-        
+
+        if isEditMode {
+            setDataToEdit()
+            createButton.isEnabled = true
+            daysCountTopConstraint?.constant = 105
+        } else {
+            daysCountTopConstraint?.constant = 24
+        }
+
         emojiCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
         colorCollectionView.heightAnchor.constraint(greaterThanOrEqualToConstant: 0).isActive = true
-        
+
         updateCollectionViewHeights()
-        
     }
     
     @objc
@@ -177,23 +233,23 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     
     @objc private func textFieldDidChange() {
         guard let text = titleTextField.text else { return }
-        
-        if text.count > 38 {
-            maxLengthLabel.isHidden = false
-            createButton.isEnabled = false
+
+        let isTextEmpty = text.isEmpty
+        let isOverLimit = text.count > 38
+
+        maxLengthLabel.isHidden = !isOverLimit
+        createButton.isEnabled = !isOverLimit && (!isTextEmpty || isEditMode) // Учитываем режим редактирования
+
+        if isOverLimit || (isTextEmpty && !isEditMode) {
             createButton.backgroundColor = .grayYp
-            
-            // Меняем отступ на 32, если лейбл виден
-            optionsTableViewTopConstraint?.constant = 62
+            createButton.setTitleColor(.white, for: .normal)
         } else {
-            maxLengthLabel.isHidden = true
-            createButton.isEnabled = !text.isEmpty
-            createButton.backgroundColor = text.isEmpty ? .grayYp : .blackDayYp
-            
-            // Меняем отступ на 24, если лейбл скрыт
-            optionsTableViewTopConstraint?.constant = 24
+            createButton.backgroundColor = Colors.buttonDisabledColor
+            createButton.setTitleColor(Colors.viewBackground, for: .normal)
         }
-        
+
+        optionsTableViewTopConstraint?.constant = isOverLimit ? 62 : 24
+
         // Анимируем изменение отступа
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
@@ -206,28 +262,30 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
     }
     
     @objc private func didTapCreateButton() {
-        print("Selected schedule: \(selectedSchedule)")
         guard
             let category = category?.title,
             let title = titleTextField.text, !title.isEmpty,
             let color = selectedColor,
             let emoji = selectedEmoji,
-            !selectedSchedule.isEmpty else { return }
-        
-        let newTracker = Tracker(
-            id: UUID(),
+            !selectedSchedule.isEmpty
+        else { return }
+
+        let tracker = Tracker(
+            id: trackerToEdit?.id ?? UUID(),
             title: title,
             color: color,
             emoji: emoji,
             schedule: selectedSchedule,
-            type: .habbit
+            type: .habit,
+            isPinned: trackerToEdit?.isPinned ?? false
         )
-        if trackerHabbitDelegate == nil {
-            print("⚠️ Делегат delegate2 не установлен")
+
+        if isEditMode {
+            trackerHabbitDelegate?.didTapSaveButton(categoryTitle: category, trackerToUpdate: tracker)
+        } else {
+            trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: tracker)
         }
-        
-        trackerHabbitDelegate?.didTapCreateButton(categoryTitle: category, trackerToAdd: newTracker)
-        print("Создан новый трекер: \(newTracker)")
+
         presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
@@ -271,9 +329,52 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         return shortNames.joined(separator: ", ")
     }
     
+    // MARK: - Setup Data for Editing
+
+    private func setDataToEdit() {
+        guard let tracker = trackerToEdit else { return }
+
+        titleTextField.text = tracker.title
+        selectedEmoji = tracker.emoji
+        selectedColor = tracker.color
+        selectedSchedule = tracker.schedule
+        
+        setupDaysCount(daysCount)
+        print("\(daysCount)")
+
+        if let index = Constants.emojis.firstIndex(of: tracker.emoji) {
+            let indexPath = IndexPath(row: index, section: 0)
+            emojiCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        if let index = Constants.colors.firstIndex(of: tracker.color) {
+            let indexPath = IndexPath(row: index, section: 0)
+            colorCollectionView.selectItem(at: indexPath, animated: false, scrollPosition: .centeredVertically)
+        }
+
+        optionsTableView.reloadData()
+        createButton.setTitle("Сохранить", for: .normal)
+        habbitTitle.text = "Редактирование привычки"
+        
+        // Обновляем состояние кнопки
+        createButton.isEnabled = true
+        createButton.backgroundColor = Colors.buttonDisabledColor
+        createButton.setTitleColor(Colors.viewBackground, for: .normal)
+    }
+    
+    func setupDaysCount(_ dayCount: Int) {
+        daysCountLabel.isHidden = false
+        let dayString = String.localizedStringWithFormat(
+            NumberOfDays.numberOfDays ,
+            dayCount
+        )
+        daysCountLabel.text = dayString
+    }
+    
     private func setupViews() {
         // Добавляем фиксированные элементы на основной view
         view.addSubview(habbitTitle)
+        view.addSubview(daysCountLabel)
         view.addSubview(titleTextField)
         view.addSubview(maxLengthLabel)
         view.addSubview(optionsTableView)
@@ -296,14 +397,23 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         optionsTableViewTopConstraint = optionsTableView.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: 24)
         optionsTableViewTopConstraint?.isActive = true
         
-        guard let constant = optionsTableViewTopConstraint else { return }
+        daysCountTopConstraint = titleTextField.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24)
+        daysCountTopConstraint?.isActive = true
+        
+        guard let constant = optionsTableViewTopConstraint, let daysConstant = daysCountTopConstraint else { return }
         
         // Констрейнты для фиксированных элементов
         NSLayoutConstraint.activate([
-            habbitTitle.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            // habbitTitle
+            habbitTitle.topAnchor.constraint(equalTo: view.topAnchor, constant: 32),
             habbitTitle.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            titleTextField.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24),
+            // daysCountLabel
+            daysCountLabel.topAnchor.constraint(equalTo: habbitTitle.bottomAnchor, constant: 24),
+            daysCountLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            // titleTextField
+            daysConstant,
             titleTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             titleTextField.heightAnchor.constraint(equalToConstant: 75),
@@ -418,7 +528,7 @@ final class TrackerHabbitViewController: UIViewController, UITableViewDataSource
         }
         
         cell.accessoryType = .disclosureIndicator
-        cell.backgroundColor = .backgroundDayYp
+        cell.backgroundColor = Colors.tableCellColor
         return cell
     }
     
@@ -516,20 +626,18 @@ extension TrackerHabbitViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
         
-        cell.titleLabel.backgroundColor = .lightGrayYp
+        cell.isSelected = true
         
         if collectionView == emojiCollectionView {
             selectedEmoji = Constants.emojis[indexPath.row]
         } else if collectionView == colorCollectionView {
             selectedColor = Constants.colors[indexPath.row]
-            cell.colorView.layer.borderColor = selectedColor?.withAlphaComponent(0.3).cgColor
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell
-        cell?.titleLabel.backgroundColor = .white
-        cell?.colorView.layer.borderColor = UIColor.white.cgColor
+        guard let cell = collectionView.cellForItem(at: indexPath) as? TrackerHabbitViewCell else { return }
+        cell.isSelected = false
     }
 }
 
@@ -576,5 +684,11 @@ extension TrackerHabbitViewController: CategoryViewControllerDelegate {
         print("Selected category: \(selectedCategory.title)")
         category = selectedCategory
         optionsTableView.reloadData()
+    }
+}
+
+private extension TrackerHabbitViewController {
+    enum NumberOfDays {
+        static let numberOfDays = NSLocalizedString("numberOfDays", comment: "Number of completed habbits/events in days")
     }
 }

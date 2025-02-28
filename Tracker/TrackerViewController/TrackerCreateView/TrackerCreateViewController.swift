@@ -7,7 +7,7 @@ final class TrackerCreateViewController: UIViewController {
         let label = UILabel()
         label.text = "Создание трекера"
         label.font = .systemFont(ofSize: 16)
-        label.tintColor = .black
+        label.tintColor = Colors.fontColor
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -15,9 +15,9 @@ final class TrackerCreateViewController: UIViewController {
     private lazy var addHabitButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Привычка", for: .normal)
-        button.tintColor = .black
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .black
+        button.tintColor = Colors.buttonDisabledColor
+        button.setTitleColor(Colors.viewBackground, for: .normal)
+        button.backgroundColor = Colors.buttonDisabledColor
         button.layer.cornerRadius = 16
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -28,9 +28,8 @@ final class TrackerCreateViewController: UIViewController {
     private lazy var addIrregEventButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Нерегулярное событие", for: .normal)
-        button.tintColor = .black
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = .black
+        button.setTitleColor(Colors.viewBackground, for: .normal)
+        button.backgroundColor = Colors.buttonDisabledColor
         button.layer.cornerRadius = 16
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -41,7 +40,7 @@ final class TrackerCreateViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = Colors.viewBackground
         
         setupTrackerView()
     }

@@ -1,0 +1,75 @@
+
+// MARK: - TabBarViewController
+
+"statistic.screen.title" = "Статистика";
+"trackers.screen.title" = "Трекеры";
+
+// MARK: - General
+
+"datePicker" = "ru_CH";
+
+"habit" = "Привычка";
+"irregularEvent" = "Нерегулярные событие";
+"category" = "Категория";
+"schedule" = "Расписание";
+"color" = "Цвет";
+"unknown" = "Неизвестный";
+
+"cancel" = "Отменить";
+"create" = "Создать";
+"delete" = "Удалить";
+"edit" = "Редактировать";
+"done" = "Готово";
+"save" = "Сохранить";
+"unpin" = "Открепить";
+"pin" = "Закрепить";
+
+"searchPlaceholder" = "Поиск";
+"validation.title.message" = "Ограничение %d символов";
+
+"filters" = "Фильтры";
+
+// MARK: - TrackerViewController
+
+"tracker.screen.dummyPlaceHolder" = "Что будем отслеживать?";
+"tracker.screen.dummySearchPlaceHolder" = "Ничего не найдено";
+"tracker.screen.alertMessage" = "Уверены что хотите удалить трекер?";
+"tracker.screen.pinnedCategory" = "Закрепленные";
+
+// MARK: - StatisticViewController
+
+"statistic.screen.dummyPlaceHolder" = "Анализировать пока нечего";
+
+// MARK: - WeekDay
+
+"monday" = "Понедельник";
+"tuesday" = "Вторник";
+"wednesday" = "Среда";
+"thursday" = "Четверг";
+"friday" = "Пятница";
+"saturday" = "Суббота";
+"sunday" = "Воскресенье";
+
+"monday.short" = "Пн";
+"tuesday.short" = "Вт";
+"wednesday.short" = "Ср";
+"thursday.short" = "Чт";
+"friday.short" = "Пт";
+"saturday.short" = "Сб";
+"sunday.short" = "Вс";
+
+"everyDay" = "Каждый день";
+
+// MARK: - FilterViewController
+
+"filter.screen.all" = "Все трекеры";
+"filter.screen.today" = "Трекеры на сегодня";
+"filter.screen.completed" = "Завершенные";
+"filter.screen.notCompleted" = "Не завершенные";
+
+// MARK: - StatisticViewController
+
+"statistic.screen.trackersCompleted" = "Трекеров завершено";
+"statistic.screen.bestPeriod" = "Лучший период";
+"statistic.screen.idealВays" = "Идеальные дни";
+"statistic.screen.averageValue" = "Cреднее значение";
